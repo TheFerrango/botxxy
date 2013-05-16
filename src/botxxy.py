@@ -891,7 +891,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
         if index < 1.0:
           bar = cmp_bars[4]
         else:
-          bar = cmp_bars[int(index / 25)] # int(index / 25) will return an integer from 0 to 3 to choose what bar to show
+          bar = cmp_bars[int(index / 25.0001)] # int(index / 25.0001) will return an integer from 0 to 3 to choose what bar to show
         raw_artists = []
         raw_artists = compare[1] # compare[1] contains and array of pylast.artist objects
         artist_list = ''
