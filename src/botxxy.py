@@ -130,7 +130,7 @@ def authCmd(msg): # Authenticates a nick with the bot TODO: finish this
   nick = getNick(msg)
   if '#' in msg.split(':')[1]:
     chan = getChannel(msg)
-    sendChanMsg(chan, nick + " MADE A MISTAKE! LET'S ALL PRETENDE WE DIDN'T SEE THAT OK?")
+    sendChanMsg(chan, nick + " MADE A MISTAKE! LET'S ALL PRETEND WE DIDN'T SEE THAT OK?")
     sendNickMsg(nick, "DO NOT DO THAT IN THE CHANNEL!!!")
   else:
     # ":b0nk!LoC@fake.dimension PRIVMSG :!pass password"
@@ -458,7 +458,7 @@ def addQuote(msg):
 
           #BLUEBERRYFOX
 
-def bbfquotes(msg): # blueberryfoxes private fuction
+def bbfquotes(msg): # blueberryfox's private function
   nick = getNick(msg)
   global ignUsrs
   if nick not in ignUsrs:
@@ -466,9 +466,9 @@ def bbfquotes(msg): # blueberryfoxes private fuction
       print prompt + nick + " sent !blueberry outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
     else:
-      print prompt + "Sending blueberryfoxes fav quotes to " + nick
+      print prompt + "Sending blueberryfoxes fav quotes to " + chan
       chan = getChannel(msg)
-      sendChanMsg (chan, "Blueberryfoxes favorite Quotes: One, two, three, four, i declare a thumb war, five, six, seven, eight i use this hand to masturbate")
+      sendChanMsg (chan, "Blueberryfoxes favorite Quotes: One, two, three, four, I declare a thumb war, five, six, seven, eight I use this hand to masturbate")
       time.sleep(1)
       sendChanMsg (chan, "I was like ohho!")
       time.sleep(1)
