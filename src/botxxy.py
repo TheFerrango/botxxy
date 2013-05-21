@@ -35,29 +35,33 @@ bothost = "m.botxxy.you.see"
 botserver = "testserver"
 botname = "testname"
 botpassword = "bawksy"
+quitmsg = 'Exited_normally!'
 
 # Global vars
 
-quitmsg = 'Exited_normally!'
-lastcommand = ''
 nicks = []
-taggers = []
+
 ignUsrs = []
+
+taggers = []
 tagged = ''
 prevTagged = ''
 isTagOn = False
-tmpstr = '' # General purpose temporary string
+lastCommand = ''
 rosestr = "3---<-<-{4@"
 boobsstr = "(.Y.)"
 prompt = '>> '
+
+# Last.fm vars
+
 lfmlogo = "0,5last.fm"
+
 cmp_bars = ["[4====            ]",
             "[4====7====        ]",
             "[4====7====8====    ]",
             "[4====7====8====9====]",
             "[                ]"]
 
-# Last.fm vars
 API_KEY = "fecc237da4852744556a13ef826e875b"
 API_SECRET = "7494fde97e69f1233a5840cf86d02251"
 lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SECRET, username = '', password_hash = '')
@@ -100,7 +104,7 @@ def hello(msg): # This function responds to a user that inputs "Hello testbot"
     chan = getChannel(msg)
     print prompt + nick + " said hi in " + chan
     sendChanMsg(chan, "Hello " + nick + "! Type !help for more information.")
-	
+  
 def identify():
   ircsock.send("NICK " + botnick + "\n") # Here we actually assign the nick to the bot
   time.sleep(3)
@@ -108,6 +112,17 @@ def identify():
   print prompt + "Bot identified"
 
 #========================END OF BASIC FUNCTIONS=====================
+
+#========================INITIALIZATIONS============================
+
+# Ignores
+  
+def loadIgn():
+  global ignUsrs
+  ignUsrs = [line.strip() for line in open('ign.txt', 'r')]
+  print prompt + "Ign -> " + ignUsrs.__str__()
+  
+#========================END OF INITIALIZATIONS=====================
 
           #AUTHENTICATION
 '''
@@ -139,31 +154,6 @@ def authCmd(msg): # Authenticates a nick with the bot TODO: finish this
         sendNickMsg(nick, "Incorrect password!")
       f.close()
 '''
-
-# Ign list
-
-def ignCmd(msg):
-  nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
-    if '#' not in msg.split(':')[1]:
-      target = msg.split(":!ign")[1].lstrip(' ')
-      if target.__len__() > 1:
-        ign(nick, target)
-
-def ign(nick, target):
-  with open("ign.txt", 'a') as f:
-    f.write(target + '\n')
-  f.closed
-  global ignUsrs
-  ignUsrs.append(target)
-  sendNickMsg(nick, target + " ignored!")
-  print prompt + "Ign -> " + ignUsrs.__str__()
-  
-def fillIgn():
-  global ignUsrs
-  ignUsrs = [line.strip() for line in open('ign.txt', 'r')]
-  print prompt + "Ign -> " + ignUsrs.__str__()
 
           #INVITE
 
@@ -374,7 +364,7 @@ def kick(nick,chan,isRand):
 
           #RANDOM KICK
 
-def randKick(nicks,chan):
+def randKick(nicks, chan):
   size = len(nicks) - 1 # Correcting offset (this means if we have an array with 5 elements we should pick a random number between 0 and 4)
   rand = random.randint(0,size) # Picks a random number
   if botnick not in nicks[rand]: # Prevents bot from being kicked by !randkick
@@ -383,6 +373,26 @@ def randKick(nicks,chan):
   else:
     print prompt + "Bot will not be kicked. Picking another one..."
     randKick(nicks,chan)
+    
+          # IGNORE
+
+def ignCmd(msg):
+  nick = getNick(msg)
+  global ignUsrs
+  if nick not in ignUsrs:
+    if '#' not in msg.split(':')[1]:
+      target = msg.split(":!ign")[1].lstrip(' ')
+      if target.__len__() > 1:
+        ign(nick, target)
+
+def ign(nick, target):
+  with open("ign.txt", 'a') as f:
+    f.write(target + '\n')
+  f.closed
+  global ignUsrs
+  ignUsrs.append(target)
+  sendNickMsg(nick, target + " ignored!")
+  print prompt + "Ign -> " + ignUsrs.__str__()
 
           #DICE
 
@@ -996,7 +1006,7 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
 
 # Initializations TODO:
 
-fillIgn()
+loadIgn()
 
 # Connection
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TODO: IPv6 ???
@@ -1031,12 +1041,12 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
         ircsock.send("NAMES " + chan + "\n")
       
       # Now that we have the nicks we can decide what to do with them depending on the command
-      if "!randkick" in lastcommand:
-        lastcommand = ''
+      if "!randkick" in lastCommand:
+        lastCommand = ''
         randKick(nicks, chan)
       
-      if "!starttag" in lastcommand:
-        lastcommand = ''
+      if "!starttag" in lastCommand:
+        lastCommand = ''
         if not isTagOn:
           taggers = nicks
           startTag(tmpstr)
@@ -1114,7 +1124,7 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
         chan = getChannel(ircmsg)
         ircsock.send("NAMES " + chan + "\n")
         print prompt + "Getting NAMES from " + chan
-        lastcommand = "!randkick"
+        lastCommand = "!randkick"
     
   if ":!topic" in ircmsg:
     topicCmd(ircmsg)
@@ -1158,7 +1168,7 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
         chan = getChannel(ircmsg)
         ircsock.send("NAMES " + chan + "\n")
         print prompt + "Getting NAMES from " + chan
-        lastcommand = "!starttag"
+        lastCommand = "!starttag"
         tmpstr = ircmsg
   
   if ":!endtag" in ircmsg:
