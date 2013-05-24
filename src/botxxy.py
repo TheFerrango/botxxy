@@ -8,7 +8,7 @@
 
 '''
 @author: b0nk
-@version: 0.9RC
+@version: 0.9
 '''
 
 # Import the necessary libraries.
@@ -133,34 +133,34 @@ def loadIgn():
 def loadGreets():
   global greets
   greets = [line.strip() for line in open('greet.txt', 'r')]
-  print prompt + "Greets -> " + greets.__str__()
+  print prompt + "Greets -> LOADED"
   
 # Parts
   
 def loadParts():
   global parts
   parts = [line.strip() for line in open('part.txt', 'r')]
-  print prompt + "Parts -> " + parts.__str__()
+  print prompt + "Parts -> LOADED"
   
 # 8ball
 
 def load8ball():
   global eightball
   eightball = [line.strip() for line in open('8ball.txt', 'r')]
-  print prompt + "8ball -> " + eightball.__str__()
+  print prompt + "8ball -> LOADED"
   
 # Quotes
 
 def loadQuotes():
   global quotes
   quotes = [line.strip() for line in open('quotes.txt', 'r')]
-  print prompt + "Quotes -> " + quotes.__str__()
+  print prompt + "Quotes -> LOADED"
   
 # Last.fm Users
 def loadLfmUsers():
   global lfmUsers
   lfmUsers = [line.strip() for line in open('lfmusers.txt', 'r')]
-  print prompt + "LfmUsers -> " + lfmUsers.__str__()
+  print prompt + "LfmUsers -> LOADED"
 
 #========================END OF INITIALIZATIONS=====================
 
@@ -538,7 +538,7 @@ def setGreetCmd(msg):
 def setGreet(nick, newMsg, toSet):
   global greets
   changed = False
-  for idx, content in greets: # Here we start scanning the array
+  for idx, content in enumerate(greets): # Here we start scanning the array
     if nick + "|!|" in content.__str__(): # In this case the user already has a greet message
       if toSet: # This will happen if there is a new entry message and not an empty one
         greets[idx] = nick + "|!|" + newMsg # Changes the entry message to the new one
@@ -599,7 +599,7 @@ def setPartCmd(msg):
 def setPart(nick, newMsg, toSet):
   global parts
   changed = False
-  for idx, content in parts: # Here we start scanning the array
+  for idx, content in enumerate(parts): # Here we start scanning the array
     if nick + "|!|" in content.__str__(): # In this case the user already has a part message
       if toSet: # This will happen if there is a new part message and not an empty one
         parts[idx] = nick + "|!|" + newMsg # Changes the part message to the new one
@@ -636,7 +636,6 @@ def sendPart(msg, isQuit):
         part = elem.split("|!|")[1]
         print prompt + "Saying goodbye to " + nick + "..."
         break
-    f.closed
     if part and isQuit: # Bot says goodbye when the user leaves the network
       sendChanMsg("#boxxy", part)
     elif part and not isQuit: # Bot says goodbye when the user leaves the channel
@@ -884,7 +883,7 @@ def setLfmUserCmd(msg):
 def setLfmUser(nick, lfm_username, toSet):
   global lfmUsers
   changed = False # hit detection
-  for idx, content in lfmUsers: # scans array
+  for idx, content in enumerate(lfmUsers): # scans array
     if nick + "|!|" in content.__str__(): # finds the nickname
       if toSet:
         lfmUsers[idx] = nick + "|!|" + lfm_username
@@ -904,7 +903,7 @@ def setLfmUser(nick, lfm_username, toSet):
         print prompt + nick + " set it's LAST.FM username to " + lfm_username
         sendNickMsg(nick, "last.fm username set!")
   with open("lfmusers.txt", 'w') as f:
-    for i in data:
+    for i in lfmUsers:
       f.write('%s\n' % i) # stores data back to file
   f.closed
 
