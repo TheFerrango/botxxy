@@ -976,7 +976,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
           sendChanMsg(chan, lfmlogo + ' ' + target + " has an empty library")
           print prompt + target + " has an empty library" # no need to get a nowplaying when the library is empty
         else:
-          np = lfm_user.get_now_playing() #np is now a pylast.Track object
+          np = lfm_user.get_now_playing() # np is now a pylast.Track object
           if np is None: # user does not have a now listening track
             sendChanMsg(chan, lfmlogo + ' ' + target + " does not seem to be playing any music right now...")
             print prompt + target + " does not seem to be playing any music right now..."
@@ -991,18 +991,18 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
             
             np = np.get_add_info(target)
             
-            if np.userloved == '1':#checks if np is a loved track to show when brodcasted to channel
+            if np.userloved == '1': # checks if np is a loved track to show when brodcasted to channel
               loved = " 13<3"
             else:
               loved = ''
             
             raw_tags = np.get_top_tags(5)
-            if raw_tags.__len__() < 1: #some tracks have no tags therefor we request the artist tags
+            if raw_tags.__len__() < 1: # some tracks have no tags therefor we request the artist tags
               raw_tags = np.artist.get_top_tags(5)
             tags = ''
             while raw_tags:
-              tags += raw_tags.pop().item.name.encode('utf8') + ", "#builds tags string
-            tags = tags.rstrip(", ")#removes last comma
+              tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
+            tags = tags.rstrip(", ") # removes last comma
             
             sendChanMsg(chan, lfmlogo + ' ' + target + " is now playing: " + artist_name + " - " + track + " (" + playCount.__str__() + " plays, " + tags + loved + ")")# broadcast to channel
             print prompt + target + " is now playing: " + artist_name + " - " + track + " (" + playCount.__str__() + " plays, " + tags + loved + ")"
