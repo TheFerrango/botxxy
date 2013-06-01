@@ -943,7 +943,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
         else: # no artists in common so we return '(None)'
           artist_list = "(None)"
         sendChanMsg(chan, lfmlogo + " Comparison: " + user_name1 + ' ' + bar + ' ' + user_name2 + " - Similarity: " + index.__str__() + "% - Common artists: " + artist_list)
-        print prompt + "Comparison between " + user_name1 + " and " + user_name2 + ' ' + index.__str__() + "% " + artist_list
+        print prompt + "Comparison between " + user_name1 + " and " + user_name2 + ' | ' + index.__str__() + "% | " + artist_list
       else:
         print prompt + nick + " sent bad arguments for .compare"
         sendChanMsg(chan, lfmlogo + " Bad arguments! Usage: .compare <username1> [username2]") # warning for bad usage
