@@ -19,8 +19,13 @@ import time
 import random
 
 # Other imports
+# Imports for last.fm methods
 # https://code.google.com/p/pylast/
 import pylast # last.fm interface
+
+# Imports for google search
+import urllib
+import json
 
 # Some basic variables used to configure the bot
 
@@ -71,6 +76,11 @@ API_KEY = "fecc237da4852744556a13ef826e875b"
 API_SECRET = "7494fde97e69f1233a5840cf86d02251"
 
 lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SECRET, username = '', password_hash = '')
+
+# Google vars
+
+g_logo = "12G4o8o12g9l4e"
+g_baseURL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
 
@@ -1031,6 +1041,8 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
     time.sleep(0.5)
     sendNickMsg(nick, lfmlogo + " commands: .setuser .np .compare")
     time.sleep(0.5)
+    #sendNickMsg(nick, g_logo + " commands: !google")
+    #time.sleep(0.5)
     sendNickMsg(nick, "Channel control commands: !op !deop !hop !dehop !voice !devoice !topic !kick !randkick")
     time.sleep(0.5)
     sendNickMsg(nick, "I've been written in python 2.7 and if you want to contribute or just have an idea, talk to b0nk on #test .")
@@ -1236,6 +1248,11 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
     
   if ":.compare" in ircmsg:
     compareLfmUsers(ircmsg)
+    
+  '''
+  if "!google" in ircmsg:
+    gSearch(ircmsg)
+  '''
 
   if ircmsg is None or '':
     print prompt + "Bot timedout / killed???"
