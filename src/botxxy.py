@@ -104,7 +104,7 @@ def getUser(msg): # Returns the user and host of whoever requested a command fro
 
 def getChannel(msg): # Returns the channel from whereever a command was requested from a RAW irc PRIVMSG. Example in commentary below.
   # ":b0nk!LoC@fake.dimension PRIVMSG #test :lolmessage"
-  return msg.split(' PRIVMSG ')[-1].split(' :')[0]
+  return msg.split(" PRIVMSG ")[-1].split(' :')[0]
 
 def joinChan(chan): # This function is used to join channels.
   ircsock.send("JOIN " + chan + '\n')
@@ -1002,7 +1002,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
             np = np.get_add_info(target)
             
             if np.userloved == '1': # checks if np is a loved track to show when brodcasted to channel
-              loved = " 13<3"
+              loved = " 4<3"
             else:
               loved = ''
             
@@ -1014,8 +1014,8 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
               tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
             tags = tags.rstrip(", ") # removes last comma
             
-            sendChanMsg(chan, lfmlogo + ' ' + target + " is now playing: " + artist_name + " - " + track + " (" + playCount.__str__() + " plays, " + tags + loved + ")")# broadcast to channel
-            print prompt + target + " is now playing: " + artist_name + " - " + track + " (" + playCount.__str__() + " plays, " + tags + loved + ")"
+            sendChanMsg(chan, lfmlogo + ' ' + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays, " + tags + ")")# broadcast to channel
+            print prompt + target + " is now playing: " + artist_name + " - " + track + loved + " (" + playCount.__str__() + " plays, " + tags + ")"
 #(COLOR)last.fm(COLOR) | b0nk is now playing:(UNDERLINE)Joan Jett and the Blackhearts - You Want In, I Want Out(UNDERLINE)(1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
           #QUIT
