@@ -1112,7 +1112,7 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
       target = tmpstr.split(':')[2]
       print prompt + nick + " invited the bot to " + target + ". Joining..."
       joinChan(target)
-      sendChanMsg(target, "Thank you for inviting me here " + nick + ' ')
+      sendChanMsg(target, "Thank you for inviting me here " + nick + '!')
       tmpstr = ''
   
   if ":hello " + botnick in ircmsg.lower(): # If we can find "Hello testbot" it will call the function hello(nick)
