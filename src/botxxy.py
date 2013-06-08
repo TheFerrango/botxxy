@@ -64,7 +64,7 @@ prompt = ">> "
 
 # Last.fm vars
 
-lfmlogo = "0,5last.fm"
+lfmlogo = "0,5last.fm "
 
 cmp_bars = ["[4====            ]",
             "[4====7====        ]",
@@ -79,7 +79,7 @@ lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SECRET, userna
 
 # Google vars
 
-g_logo = "12G4o8o12g9l4e"
+g_logo = "12G4o8o12g9l4e "
 g_baseURL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
@@ -898,20 +898,20 @@ def setLfmUser(nick, lfm_username, toSet):
       if toSet:
         lfmUsers[idx] = nick + "|!|" + lfm_username
         print prompt + nick + " re-set it's LAST.FM username to " + lfm_username
-        sendNickMsg(nick, "last.fm username re-set!")
+        sendNickMsg(nick, lfmlogo + "username re-set!")
         changed = True
         break # get out of loop
       else:
         lfmUsers[idx] = None
         lfmUsers.remove(None)
         print prompt + nick + " unset it's LAST.FM username"
-        sendNickMsg(nick, "last.fm username unset!")
+        sendNickMsg(nick, lfmlogo + "username unset!")
         changed = True
         break
   if toSet and not changed:
         lfmUsers.append(nick + "|!|" + lfm_username)
         print prompt + nick + " set it's LAST.FM username to " + lfm_username
-        sendNickMsg(nick, "last.fm username set!")
+        sendNickMsg(nick, lfmlogo + "username set!")
   with open("lfmusers.txt", 'w') as f:
     for i in lfmUsers:
       f.write('%s\n' % i) # stores data back to file
@@ -935,7 +935,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
           compare = lastfm.get_user(user_name1).compare_with_user(user_name2, 5) # comparison information from pylast
         except pylast.WSError as e: # One or both users do not exist
           print prompt + e.details
-          sendChanMsg(chan, lfmlogo + " Error: " + e.details.__str__())
+          sendChanMsg(chan, lfmlogo + "Error: " + e.details.__str__())
           return None
         global cmp_bars
         index = round(float(compare[0]),4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
@@ -952,7 +952,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
           artist_list = artist_list.rstrip(", ")
         else: # no artists in common so we return '(None)'
           artist_list = "(None)"
-        sendChanMsg(chan, lfmlogo + " Comparison: " + user_name1 + ' ' + bar + ' ' + user_name2 + " - Similarity: " + index.__str__() + "% - Common artists: " + artist_list)
+        sendChanMsg(chan, lfmlogo + "Comparison: " + user_name1 + ' ' + bar + ' ' + user_name2 + " - Similarity: " + index.__str__() + "% - Common artists: " + artist_list)
         print prompt + "Comparison between " + user_name1 + " and " + user_name2 + ' | ' + index.__str__() + "% | " + artist_list
       else:
         print prompt + nick + " sent bad arguments for .compare"
@@ -972,7 +972,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
       if not target: # let's check the file
         target = getLfmUser(nick)
       if not target: # he is not in the db
-        sendChanMsg(chan , "I don't know who you are... please use .np <last.fm username>, alternatively use .setuser <last.fm username> to join your nick with your " + lfmlogo + " account")
+        sendChanMsg(chan , lfmlogo + "First set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>")
         print prompt + nick + " sent .np but is not registered"
       else:
         lfm_user = lastfm.get_user(target) # returns pylast.User object
@@ -980,15 +980,15 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
           lfm_user.get_id()
         except pylast.WSError as e: # catched the exception, user truly does not exist
           print e.details
-          sendChanMsg(chan, lfmlogo + " Error: " + e.details.__str__())
+          sendChanMsg(chan, lfmlogo + "Error: " + e.details.__str__())
           return None # GTFO
         if lfm_user.get_playcount().__int__() < 1: # checks if user has scrobbled anything EVER
-          sendChanMsg(chan, lfmlogo + ' ' + target + " has an empty library")
+          sendChanMsg(chan, lfmlogo + target + " has an empty library")
           print prompt + target + " has an empty library" # no need to get a nowplaying when the library is empty
         else:
           np = lfm_user.get_now_playing() # np is now a pylast.Track object
           if np is None: # user does not have a now listening track
-            sendChanMsg(chan, lfmlogo + ' ' + target + " does not seem to be playing any music right now...")
+            sendChanMsg(chan, lfmlogo + target + " does not seem to be playing any music right now...")
             print prompt + target + " does not seem to be playing any music right now..."
           else: # all went well
             artist_name = np.artist.get_name().encode('utf8')# string containing artist name
@@ -1014,7 +1014,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
               tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
             tags = tags.rstrip(", ") # removes last comma
             
-            sendChanMsg(chan, lfmlogo + ' ' + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays, " + tags + ")")# broadcast to channel
+            sendChanMsg(chan, lfmlogo + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays, " + tags + ")")# broadcast to channel
             print prompt + target + " is now playing: " + artist_name + " - " + track + loved + " (" + playCount.__str__() + " plays, " + tags + ")"
 #(COLOR)last.fm(COLOR) | b0nk is now playing:(UNDERLINE)Joan Jett and the Blackhearts - You Want In, I Want Out(UNDERLINE)(1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
