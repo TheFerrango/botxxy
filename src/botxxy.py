@@ -8,13 +8,13 @@
 
 '''
 @author: b0nk
-@version: 0.9
+@version: 1.0
 '''
 
 # Import the necessary libraries.
 import socket
 import ssl
-#import hashlib
+import hashlib
 import time
 import random
 
@@ -46,6 +46,8 @@ quitmsg = "Exited_normally!"
 
 nicks = []
 
+authDB = []
+authUsrs = []
 ignUsrs = []
 greets = []
 parts = []
@@ -131,6 +133,13 @@ def identify():
 
 #========================INITIALIZATIONS============================
 
+# Authorized
+
+def loadAuth():
+  global authDB
+  authDB = [line.strip() for line in open('auth.txt', 'r')]
+  print prompt + "Auth -> LOADED"
+
 # Ignores
   
 def loadIgn():
@@ -167,6 +176,7 @@ def loadQuotes():
   print prompt + "Quotes -> LOADED"
   
 # Last.fm Users
+
 def loadLfmUsers():
   global lfmUsers
   lfmUsers = [line.strip() for line in open('lfmusers.txt', 'r')]
@@ -175,35 +185,45 @@ def loadLfmUsers():
 #========================END OF INITIALIZATIONS=====================
 
           #AUTHENTICATION
-'''
-def authCmd(msg): # Authenticates a nick with the bot TODO: finish this
+
+def authCmd(msg): # Authenticates a nick with the bot
   nick = getNick(msg)
-  if '#' in msg.split(':')[1]:
-    chan = getChannel(msg)
-    sendChanMsg(chan, nick + " MADE A MISTAKE! LET'S ALL PRETEND WE DIDN'T SEE THAT OK?")
-    sendNickMsg(nick, "DO NOT DO THAT IN THE CHANNEL!!!")
-  else:
-    # ":b0nk!LoC@fake.dimension PRIVMSG :!pass password"
-    password = msg.split("!pass")[1].translate(None, ' ') # RAW password
-    if (not password):
-      sendNickMsg(nick, "Bad arguments. Usage: !pass <password>")
+  if nick not in ignUsrs:
+    global authDB, authUsrs
+    if '#' in msg.split(':')[1]:
+      chan = getChannel(msg)
+      for i, content in enumerate(authDB):
+        if nick + "|!|" in content:
+          authDB[i] = None
+          authDB.remove(None)
+          authUsrs.remove(nick)
+          print prompt + authDB.__str__()
+          with open("auth.txt", 'w') as f:
+            for i in authDB:
+              f.write('%s\n' % i)
+              f.closed
+              
+          sendChanMsg(chan, "Password deleted you dumbass!!!")
+          sendNickMsg(nick, "Request a new password.")
     else:
-      print prompt + "RAW: " + password
-      password = hashlib.sha256(password).hexdigest() # A HEX representation of the SHA-256 encrypted password
-      print prompt + "ENC: " + password
-      success = False
-      f = open("auth.txt", 'r') # Opens auth.txt with 'r'ead-only permissions
-      for line in f:
-        print prompt + line # debugging
-        if (line.split("|!|")[0] == nick) and (line.split("|!|")[1] == password):
-          print prompt + nick + " has authenticated successfully"
-          success = True
-          sendNickMsg(nick, "Correct password! You are now authenticated.")
-      if not success:
+      # ":b0nk!LoC@fake.dimension PRIVMSG :!pass password"
+      password = msg.split("!pass")[1].lstrip(' ') # RAW password
+      if not password:
+        sendNickMsg(nick, "Bad arguments. Usage: !pass <password>")
+      else:
+        password = hashlib.sha256(password).hexdigest() # A HEX representation of the SHA-256 encrypted password
+        print prompt + "ENC: " + password
+        
+        for i, content in enumerate(authDB):
+          if nick + "|!|" + password in content:
+            authUsrs.append(nick)
+            print prompt + nick + " is authorized.\n" + prompt + authUsrs.__str__()
+            sendNickMsg(nick, "Password correct.")
+            return None
+
         print prompt + nick + " mistyped the password"
-        sendNickMsg(nick, "Incorrect password!")
-      f.close()
-'''
+        sendNickMsg(nick, "Password incorrect!")
+
 
           #INVITE
 
@@ -232,8 +252,8 @@ def invite(nick,chan): # Invites given nickname to present channel
 
 def voiceCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !voice outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -253,8 +273,8 @@ def voice(nick,chan):
 
 def devoiceCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !devoice outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -276,8 +296,8 @@ def devoice(nick,chan):
 
 def opCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !op outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -297,8 +317,8 @@ def op(nick,chan):
 
 def deopCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !deop outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -320,8 +340,8 @@ def deop(nick,chan):
 
 def hopCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !hop outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -341,8 +361,8 @@ def hop(nick,chan):
 
 def dehopCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !dehop outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -364,8 +384,8 @@ def dehop(nick,chan):
 
 def topicCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !topic outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -387,8 +407,8 @@ def changeTopic(chan, topic):
 
 def kickCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       print prompt + nick + " sent !kick outside of a channel"
       sendNickMsg(nick, "You are not in a channel")
@@ -428,8 +448,8 @@ def randKick(nicks, chan):
 
 def ignCmd(msg):
   nick = getNick(msg)
-  global ignUsrs
-  if nick not in ignUsrs:
+  global ignUsrs, authUsrs
+  if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
       target = msg.split(":!ign")[1].lstrip(' ')
       if target:
@@ -488,7 +508,7 @@ def quoteCmd(msg): #TODO: quote IDs
 
 def addQuote(msg):
   nick = getNick(msg)
-  global ignUsrs
+  global ignUsrs, authUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]: # Checks if quote was sent outside of a channel
       print prompt + nick + " sent !addquote outside of a channel"
@@ -898,20 +918,20 @@ def setLfmUser(nick, lfm_username, toSet):
       if toSet:
         lfmUsers[idx] = nick + "|!|" + lfm_username
         print prompt + nick + " re-set it's LAST.FM username to " + lfm_username
-        sendNickMsg(nick, lfmlogo + "username re-set!")
+        sendNickMsg(nick, "last.fm username re-set!")
         changed = True
         break # get out of loop
       else:
         lfmUsers[idx] = None
         lfmUsers.remove(None)
         print prompt + nick + " unset it's LAST.FM username"
-        sendNickMsg(nick, lfmlogo + "username unset!")
+        sendNickMsg(nick, "last.fm username unset!")
         changed = True
         break
   if toSet and not changed:
         lfmUsers.append(nick + "|!|" + lfm_username)
         print prompt + nick + " set it's LAST.FM username to " + lfm_username
-        sendNickMsg(nick, lfmlogo + "username set!")
+        sendNickMsg(nick, "last.fm username set!")
   with open("lfmusers.txt", 'w') as f:
     for i in lfmUsers:
       f.write('%s\n' % i) # stores data back to file
@@ -956,7 +976,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
         print prompt + "Comparison between " + user_name1 + " and " + user_name2 + ' | ' + index.__str__() + "% | " + artist_list
       else:
         print prompt + nick + " sent bad arguments for .compare"
-        sendChanMsg(chan, lfmlogo + " Bad arguments! Usage: .compare <username1> [username2]") # warning for bad usage
+        sendChanMsg(chan, lfmlogo + "Bad arguments! Usage: .compare <username1> [username2]") # warning for bad usage
 
 
 def nowPlaying(msg): # use of the last.fm interface (pylast) in here
@@ -1028,7 +1048,7 @@ def quitIRC(): #This kills the bot!
 
 def helpcmd(msg): #Here is the help message to be sent as a private message to the user
   nick = getNick(ircmsg)
-  global ignUsrs
+  global ignUsrs, authUsrs
   if nick not in ignUsrs:
     print prompt + "Help requested by " + nick
     sendNickMsg(nick, "You have requested help.")
@@ -1037,18 +1057,20 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
     time.sleep(0.5)
     sendNickMsg(nick, "You can also invite me to a channel and I'll thank you for inviting me there.")
     time.sleep(0.5)
-    sendNickMsg(nick, "General commands: !help !invite !rtd !quote !addquote !setjoinmsg !setquitmsg !starttag !endtag !tag !rose !boobs !8ball")
+    sendNickMsg(nick, "General commands: !help !invite !rtd !quote !addquote !setjoinmsg !setquitmsg !starttag !endtag !tag !rose !boobs !8ball !pass")
     time.sleep(0.5)
-    sendNickMsg(nick, lfmlogo + " commands: .setuser .np .compare")
+    sendNickMsg(nick, lfmlogo + "commands: .setuser .np .compare")
     time.sleep(0.5)
     #sendNickMsg(nick, g_logo + " commands: !google")
     #time.sleep(0.5)
-    sendNickMsg(nick, "Channel control commands: !op !deop !hop !dehop !voice !devoice !topic !kick !randkick")
-    time.sleep(0.5)
+    if nick in authUsrs:
+      sendNickMsg(nick, "Channel control commands: !op !deop !hop !dehop !voice !devoice !topic !kick !randkick")
+      time.sleep(0.5)
     sendNickMsg(nick, "I've been written in python 2.7 and if you want to contribute or just have an idea, talk to b0nk on #test .")
 
 # Initializations TODO:
 
+loadAuth()
 loadIgn()
 loadGreets()
 loadParts()
@@ -1176,10 +1198,10 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
     
   if ":!topic" in ircmsg:
     topicCmd(ircmsg)
-  '''
-  if ":!pass" in ircmsg: #TODO: make this
+  
+  if ":!pass" in ircmsg:
     authCmd(ircmsg)
-  '''
+  
   if ":!quote" in ircmsg:
     quoteCmd(ircmsg)
     
