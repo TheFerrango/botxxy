@@ -13,7 +13,7 @@ server = "boxxybabee.catiechat.net" # EU server
 port = 6667 # default port
 ssl_port = 6697 # ssl port
 chans = ["#test", "#your_channels_here"] #default channels
-botnick = "botnick" # bot nick
+botnick = "skeleton" # bot nick
 botuser = "botuser"
 bothost = "bothost"
 botserver = "botserver"
@@ -59,7 +59,7 @@ def ping(reply): # This is our first function! It will respond to server Pings.
 def hello(msg): # This function responds to a user that inputs "Hello <botnick>"
 	nick = getNick(msg)
 	chan = getChannel(msg)
-	print(prompt + nick + " said hi in " + chan)
+	print prompt + nick + " said hi in " + chan
 	sendChanMsg(chan, "Hello " + nick)
 
 # Connection
@@ -74,7 +74,7 @@ joinChans(chans)
 while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
 	ircmsg = ircsock.recv(4096) # Receive data from the server
 	ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
-	print(ircmsg) # Here we print what's coming from the server
+	print ircmsg # Here we print what's coming from the server
 	
 	if "PING :" in ircmsg: # If the server pings us then we've got to respond!
 		reply = ircmsg.split("PING :")[1] # In some IRCds it is mandatory to reply to PING the same message we recieve
