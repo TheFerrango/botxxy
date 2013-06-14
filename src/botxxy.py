@@ -8,7 +8,7 @@
 
 '''
 @author: b0nk
-@version: 1.0
+@version: 1.1
 '''
 
 # Import the necessary libraries.
@@ -26,6 +26,10 @@ import pylast # last.fm interface
 # Imports for google search
 import urllib
 import json
+
+# Imports for feeds
+# Twitter
+import feedparser
 
 # Some basic variables used to configure the bot
 
@@ -66,7 +70,7 @@ prompt = ">> "
 
 # Last.fm vars
 
-lfmlogo = "0,5last.fm "
+lfm_logo = "0,5last.fm "
 
 cmp_bars = ["[4====            ]",
             "[4====7====        ]",
@@ -83,6 +87,10 @@ lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SECRET, userna
 
 g_logo = "12G4o8o12g9l4e "
 g_baseURL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="
+
+# Twitter vars
+t_logo = "0,10twitter "
+t_baseURL = "http://www.twitter-rss.com/user_timeline.php?screen_name="
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
 
@@ -520,9 +528,9 @@ def addQuote(msg):
       if not newQuote: # Checks for empty quote
         sendChanMsg(chan,"Bad arguments. Usage: !addquote [<quote>]")
       else:
-        print prompt + nick + " added '" + newQuote + "'\n"
         global quotes
         quotes.append(nick + "|!|" + newQuote)
+        print prompt + nick + " added '" + newQuote + "'\n"
         with open("quotes.txt", 'w') as f:
           for i in quotes:
             f.write("%s\n" % i)
@@ -955,7 +963,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
           compare = lastfm.get_user(user_name1).compare_with_user(user_name2, 5) # comparison information from pylast
         except pylast.WSError as e: # One or both users do not exist
           print prompt + e.details
-          sendChanMsg(chan, lfmlogo + "Error: " + e.details.__str__())
+          sendChanMsg(chan, lfm_logo + "Error: " + e.details.__str__())
           return None
         global cmp_bars
         index = round(float(compare[0]),4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
@@ -972,11 +980,11 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
           artist_list = artist_list.rstrip(", ")
         else: # no artists in common so we return '(None)'
           artist_list = "(None)"
-        sendChanMsg(chan, lfmlogo + "Comparison: " + user_name1 + ' ' + bar + ' ' + user_name2 + " - Similarity: " + index.__str__() + "% - Common artists: " + artist_list)
+        sendChanMsg(chan, lfm_logo + "Comparison: " + user_name1 + ' ' + bar + ' ' + user_name2 + " - Similarity: " + index.__str__() + "% - Common artists: " + artist_list)
         print prompt + "Comparison between " + user_name1 + " and " + user_name2 + ' | ' + index.__str__() + "% | " + artist_list
       else:
         print prompt + nick + " sent bad arguments for .compare"
-        sendChanMsg(chan, lfmlogo + "Bad arguments! Usage: .compare <username1> [username2]") # warning for bad usage
+        sendChanMsg(chan, lfm_logo + "Bad arguments! Usage: .compare <username1> [username2]") # warning for bad usage
 
 
 def nowPlaying(msg): # use of the last.fm interface (pylast) in here
@@ -992,7 +1000,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
       if not target: # let's check the file
         target = getLfmUser(nick)
       if not target: # he is not in the db
-        sendChanMsg(chan , lfmlogo + "First set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>")
+        sendChanMsg(chan , lfm_logo + "First set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>")
         print prompt + nick + " sent .np but is not registered"
       else:
         lfm_user = lastfm.get_user(target) # returns pylast.User object
@@ -1000,15 +1008,15 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
           lfm_user.get_id()
         except pylast.WSError as e: # catched the exception, user truly does not exist
           print e.details
-          sendChanMsg(chan, lfmlogo + "Error: " + e.details.__str__())
+          sendChanMsg(chan, lfm_logo + "Error: " + e.details.__str__())
           return None # GTFO
         if lfm_user.get_playcount().__int__() < 1: # checks if user has scrobbled anything EVER
-          sendChanMsg(chan, lfmlogo + target + " has an empty library")
+          sendChanMsg(chan, lfm_logo + target + " has an empty library")
           print prompt + target + " has an empty library" # no need to get a nowplaying when the library is empty
         else:
           np = lfm_user.get_now_playing() # np is now a pylast.Track object
           if np is None: # user does not have a now listening track
-            sendChanMsg(chan, lfmlogo + target + " does not seem to be playing any music right now...")
+            sendChanMsg(chan, lfm_logo + target + " does not seem to be playing any music right now...")
             print prompt + target + " does not seem to be playing any music right now..."
           else: # all went well
             artist_name = np.artist.get_name().encode('utf8')# string containing artist name
@@ -1034,10 +1042,46 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
               tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
             tags = tags.rstrip(", ") # removes last comma
             
-            sendChanMsg(chan, lfmlogo + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays, " + tags + ")")# broadcast to channel
+            sendChanMsg(chan, lfm_logo + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays, " + tags + ")")# broadcast to channel
             print prompt + target + " is now playing: " + artist_name + " - " + track + loved + " (" + playCount.__str__() + " plays, " + tags + ")"
-#(COLOR)last.fm(COLOR) | b0nk is now playing:(UNDERLINE)Joan Jett and the Blackhearts - You Want In, I Want Out(UNDERLINE)(1 plays, rock, rock n roll, Joan Jett, 80s, pop)
+              #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
+
+          #TWITTER
+          
+def twitter(msg):
+  nick = getNick(msg)
+  global ignUsrs
+  if nick not in ignUsrs:
+    if '#' not in msg.split(':')[1]:
+      print prompt + nick + " sent !twitter outside of a channel"
+      sendNickMsg(nick, "You are not in a channel")
+    else:
+      chan = getChannel(msg)
+      arg = msg.split(":!twitter")[1].lstrip(' ')
+      if arg:
+        t_user = arg
+        index = 0
+        if ' ' in arg:
+          t_user = arg.split(' ')[0]
+          index = arg.split(' ')[1]
+          try:
+            index = int(index)
+          except ValueError:
+            index = 0
+        feed = feedparser.parse(t_baseURL + t_user)
+        if not feed.entries:
+          sendChanMsg(chan, t_logo + "Service unavailable / User does not exist / User has no tweets. Try again later...")
+          print prompt + "Something went wrong with twitter " + t_user + " " + index.__str__()
+        else:
+          tweet = feed.entries[index].title.encode('utf8').replace('\n', ' ')
+          print prompt + tweet + " " + index.__str__()
+          sendChanMsg(chan, t_logo + tweet)
+      else:
+        print prompt + nick + " used bad arguments for !twitter"
+        sendChanMsg(chan, t_logo + "Bad arguments! Usage: !twitter <twitteruser> [optional number]")
+            
+          
           #QUIT
 
 def quitIRC(): #This kills the bot!
@@ -1059,7 +1103,9 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
     time.sleep(0.5)
     sendNickMsg(nick, "General commands: !help !invite !rtd !quote !addquote !setjoinmsg !setquitmsg !starttag !endtag !tag !rose !boobs !8ball !pass")
     time.sleep(0.5)
-    sendNickMsg(nick, lfmlogo + "commands: .setuser .np .compare")
+    sendNickMsg(nick, lfm_logo + "commands: .setuser .np .compare")
+    time.sleep(0.5)
+    sendNickMsg(nick, t_logo + "commands: !twitter")
     time.sleep(0.5)
     #sendNickMsg(nick, g_logo + " commands: !google")
     #time.sleep(0.5)
@@ -1137,7 +1183,7 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
       sendChanMsg(target, "Thank you for inviting me here " + nick + '!')
       tmpstr = ''
   
-  if ":hello " + botnick in ircmsg.lower(): # If we can find "Hello testbot" it will call the function hello(nick)
+  if ":hello " + botnick in ircmsg.lower() or ":hi " + botnick in ircmsg.lower(): # If we can find "Hello/Hi testbot" it will call the function hello(nick)
     hello(ircmsg)
     
   if ":!help" in ircmsg: # checks for !help
@@ -1275,7 +1321,10 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
   if "!google" in ircmsg:
     gSearch(ircmsg)
   '''
-
+    
+  if "!twitter" in ircmsg:
+    twitter(ircmsg)
+  
   if ircmsg is None or '':
     print prompt + "Bot timedout / killed???"
     quitIRC()
