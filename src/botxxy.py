@@ -38,7 +38,7 @@ server = "boxxybabee.catiechat.net" # EU server
 #server = "anewhopeee.catiechat.net" # US server
 port = 6667 # default port
 ssl_port = 6697 # ssl port
-chans = ["#test", "#music", "#boxxy"] #default channels
+chans = ["#test", "#music", "#boxxy", "#IdleRPG"] #default channels
 botnick = "testbot" # bot nick
 botuser = "I"
 bothost = "m.botxxy.you.see"
@@ -137,6 +137,10 @@ def identify():
 #========================END OF BASIC FUNCTIONS=====================
 
 #========================INITIALIZATIONS============================
+
+def idleRPG():
+  ircsock.send("PRIVMSG IdleBot :LOGIN derpbot 123456\n")
+  print prompt + "Logged in to IdleRPG"
 
 # Authorized
 
@@ -880,9 +884,9 @@ def sayCmd(msg):
       sendChanMsg(chan, "Don't do that in the channel " + nick)
       sendNickMsg(nick, "Send it as a notice or query(pvt)")
     else: # ":b0nk!~LoC@fake.dimension PRIVMSG testbot :!say #boxxy lol message"
-      targetChan = msg.split(':')[2].split(' ')[1]
-      message = msg.split(targetChan)[1].lstrip(' ')
-      sendChanMsg(targetChan, message)
+      target = msg.split(':')[2].split(' ')[1]
+      message = msg.split(target)[1].lstrip(' ')
+      ircsock.send("PRIVMSG " + target + " :" + message + '\n')
     
           #8BALL
           
@@ -1150,6 +1154,8 @@ time.sleep(3)
 identify() # Bot identification
 time.sleep(3)
 joinChans(chans)
+time.sleep(3)
+idleRPG()
 
 while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
   ircmsg = ircsock.recv(1024) # Receive data from the server
