@@ -1089,14 +1089,18 @@ def getTweet(msg):
           except ValueError:
             index = 0
         global t_api
-        tweets = t_api.GetUserTimeline(None, t_user)
-        if not tweets:
-          sendChanMsg(chan, t_logo + "Service unavailable / User does not exist / User has no tweets. Try again later...")
-          print prompt + "Something went wrong with twitter " + t_user + ' ' + index.__str__()
-        else:
+        try:
+          tweets = t_api.GetUserTimeline(None, t_user)
           tweet = tweets[index].GetText().encode('utf8')
+          t_user = t_api.GetUser(None, t_user)._screen_name.encode('utf8')
           sendChanMsg(chan, t_logo + '@' + t_user + ': ' + tweet)
           print prompt + t_user + ' ' + index.__str__() + ' ' + tweet
+        except twitter.TwitterError as e:
+          err_msg = e.message[0].get('message').encode('utf8')
+          err_code = e.message[0].get('code').__str__()
+          print err_msg + ' Code:' + err_code
+          sendChanMsg(chan, t_logo + "Error: " + err_msg + ' Code:' + err_code)
+          return None # GTFO
       else:
         print prompt + nick + " used bad arguments for !twitter"
         sendChanMsg(chan, t_logo + "Bad arguments! Usage: !twitter <twitteruser> [optional number]")
