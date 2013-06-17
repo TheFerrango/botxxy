@@ -17,19 +17,20 @@ import ssl
 import hashlib
 import time
 import random
+import string
 
 # Other imports
 # Imports for last.fm methods
 # https://code.google.com/p/pylast/
-import pylast # last.fm interface
+import pylast
 
 # Imports for google search
-import urllib
-import json
+#import urllib
+#import json
 
 # Imports for feeds
 # Twitter
-import feedparser
+import twitter
 
 # Some basic variables used to configure the bot
 
@@ -64,6 +65,7 @@ tagged = ''
 prevTagged = ''
 isTagOn = False
 lastCommand = ''
+tmpstr = ''
 rosestr = "3---<-<-{4@"
 boobsstr = "(.Y.)"
 prompt = ">> "
@@ -71,17 +73,12 @@ prompt = ">> "
 # Last.fm vars
 
 lfm_logo = "0,5last.fm "
-
 cmp_bars = ["[4====            ]",
             "[4====7====        ]",
             "[4====7====8====    ]",
             "[4====7====8====9====]",
             "[                ]"]
-
-API_KEY = "fecc237da4852744556a13ef826e875b"
-API_SECRET = "7494fde97e69f1233a5840cf86d02251"
-
-lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SECRET, username = '', password_hash = '')
+lastfm = None
 
 # Google vars
 
@@ -90,7 +87,7 @@ g_baseURL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="
 
 # Twitter vars
 t_logo = "0,10twitter "
-t_baseURL = "http://www.twitter-rss.com/user_timeline.php?screen_name="
+t_api = None
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
 
@@ -189,6 +186,24 @@ def loadLfmUsers():
   global lfmUsers
   lfmUsers = [line.strip() for line in open('lfmusers.txt', 'r')]
   print prompt + "LfmUsers -> LOADED"
+  
+def loadLfm():
+  lines = [line.strip() for line in open('lfm.txt', 'r')]
+  API_KEY = filter(lambda x: x in string.printable, lines[0])
+  API_SEC = lines[1]
+  global lastfm
+  lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SEC, username = '', password_hash = '')
+  print prompt + "last.fm interface -> LOADED"
+  
+def loadTwitter():
+  lines = [line.strip() for line in open('twitter.txt', 'r')]
+  CON_KEY = filter(lambda x: x in string.printable, lines[0])
+  CON_SEC = lines[1]
+  ACC_TOK = lines[2]
+  ACC_SEC = lines[3]
+  global t_api
+  t_api = twitter.Api(consumer_key = CON_KEY, consumer_secret = CON_SEC, access_token_key = ACC_TOK, access_token_secret = ACC_SEC)
+  print prompt + "twitter API -> LOADED"
 
 #========================END OF INITIALIZATIONS=====================
 
@@ -467,7 +482,7 @@ def ign(nick, target):
   global ignUsrs
   ignUsrs.append(target)
   with open("ign.txt", 'w') as f:
-    for elem in ignUsers:
+    for elem in ignUsrs:
       f.write("%s\n" % elem)
   f.closed
   sendNickMsg(nick, target + " ignored!")
@@ -679,7 +694,6 @@ def sendPart(msg, isQuit):
     elif part and not isQuit: # Bot says goodbye when the user leaves the channel
       chan = msg.split(" PART ")[1].split(' ')[0]
       sendChanMsg(chan, part)
-    
   
           #TAG (play catch)
           
@@ -959,6 +973,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
       if args.__len__() == 3: # correct usage
         user_name1 = args[1] # assigning usernames to vars
         user_name2 = args[2]
+        global lastfm
         try:
           compare = lastfm.get_user(user_name1).compare_with_user(user_name2, 5) # comparison information from pylast
         except pylast.WSError as e: # One or both users do not exist
@@ -966,7 +981,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
           sendChanMsg(chan, lfm_logo + "Error: " + e.details.__str__())
           return None
         global cmp_bars
-        index = round(float(compare[0]),4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
+        index = round(float(compare[0]), 4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
         if index < 1.0:
           bar = cmp_bars[4]
         else:
@@ -1003,6 +1018,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
         sendChanMsg(chan , lfm_logo + "First set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>")
         print prompt + nick + " sent .np but is not registered"
       else:
+        global lastfm
         lfm_user = lastfm.get_user(target) # returns pylast.User object
         try: # some random fuction to raise exception if the user does not exist
           lfm_user.get_id()
@@ -1049,7 +1065,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
 
           #TWITTER
           
-def twitter(msg):
+def getTweet(msg):
   nick = getNick(msg)
   global ignUsrs
   if nick not in ignUsrs:
@@ -1060,7 +1076,7 @@ def twitter(msg):
       chan = getChannel(msg)
       arg = msg.split(":!twitter")[1].lstrip(' ')
       if arg:
-        t_user = arg
+        t_user = arg.translate(None, '@')
         index = 0
         if ' ' in arg:
           t_user = arg.split(' ')[0]
@@ -1069,19 +1085,19 @@ def twitter(msg):
             index = int(index)
           except ValueError:
             index = 0
-        feed = feedparser.parse(t_baseURL + t_user)
-        if not feed.entries:
+        global t_api
+        tweets = t_api.GetUserTimeline(None, t_user)
+        if not tweets:
           sendChanMsg(chan, t_logo + "Service unavailable / User does not exist / User has no tweets. Try again later...")
-          print prompt + "Something went wrong with twitter " + t_user + " " + index.__str__()
+          print prompt + "Something went wrong with twitter " + t_user + ' ' + index.__str__()
         else:
-          tweet = feed.entries[index].title.encode('utf8').replace('\n', ' ')
-          print prompt + tweet + " " + index.__str__()
-          sendChanMsg(chan, t_logo + tweet)
+          tweet = tweets[index].GetText().encode('utf8')
+          sendChanMsg(chan, t_logo + '@' + t_user + ': ' + tweet)
+          print prompt + t_user + ' ' + index.__str__() + ' ' + tweet
       else:
         print prompt + nick + " used bad arguments for !twitter"
         sendChanMsg(chan, t_logo + "Bad arguments! Usage: !twitter <twitteruser> [optional number]")
-            
-          
+
           #QUIT
 
 def quitIRC(): #This kills the bot!
@@ -1123,6 +1139,8 @@ loadParts()
 loadQuotes()
 load8ball()
 loadLfmUsers()
+loadLfm()
+loadTwitter()
 
 # Connection
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TODO: IPv6 ???
@@ -1323,7 +1341,7 @@ while 1: # This is our infinite loop where we'll wait for commands to show up, t
   '''
     
   if "!twitter" in ircmsg:
-    twitter(ircmsg)
+    getTweet(ircmsg)
   
   if ircmsg is None or '':
     print prompt + "Bot timedout / killed???"
