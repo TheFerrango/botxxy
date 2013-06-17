@@ -247,7 +247,6 @@ def authCmd(msg): # Authenticates a nick with the bot
         print prompt + nick + " mistyped the password"
         sendNickMsg(nick, "Password incorrect!")
 
-
           #INVITE
 
 def inviteCmd(msg): # Parses the message to extract NICK and CHANNEL
