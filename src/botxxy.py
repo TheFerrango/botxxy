@@ -1150,208 +1150,209 @@ loadLfm()
 loadTwitter()
 
 # Connection
-ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TODO: IPv6 ???
-ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
-ircsock.connect((server, ssl_port)) # Here we connect to the server using the port defined above
-ircsock.send("USER " + botuser + ' ' + bothost + ' ' + botserver + ' ' + botname + '\n') # Bot authentication
-time.sleep(3)
-identify() # Bot identification
-time.sleep(3)
-joinChans(chans)
-time.sleep(3)
-idleRPG()
+try:
+  ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TODO: IPv6 ???
+  ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
+  ircsock.connect((server, ssl_port)) # Here we connect to the server using the port defined above
+  ircsock.send("USER " + botuser + ' ' + bothost + ' ' + botserver + ' ' + botname + '\n') # Bot authentication
+  time.sleep(3)
+  identify() # Bot identification
+  time.sleep(3)
+  joinChans(chans)
+  time.sleep(3)
+  idleRPG()
 
-while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
-  ircmsg = ircsock.recv(1024) # Receive data from the server
-  ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
-  print ircmsg # Here we print what's coming from the server
-  
-  if "PING :" in ircmsg: # If the server pings us then we've got to respond!
-    reply = ircmsg.split("PING :")[1] # In some IRCds it is mandatory to reply to PING the same message we recieve
-    ping(reply)
+  while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
+    ircmsg = ircsock.recv(1024) # Receive data from the server
+    ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
+    print ircmsg # Here we print what's coming from the server
     
-  if " 353 " in ircmsg:
-    try:
-      # ":irc.catiechat.net 353 testbot = #test :KernelPone ~b0nk CommVenus @testbot " 
-      chan = ircmsg.split(" = ")[1].split(' ')[0]
-      ircmsg = ircmsg.split(':')[2] # Returns raw list of nicks
-      ircmsg = ircmsg.translate(None, '~@+&%') # Removes user mode characters
-      ircmsg = ircmsg.rstrip(' ') # Removes an annoying SPACE char left by the server at the end of the string
-      ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
-      nicks = ircmsg.split(' ') # Puts nicks in an array
-      print prompt + nicks.__str__() # debugging
-      if botnick not in list(nicks):
-        ircsock.send("NAMES " + chan + '\n')
+    if "PING :" in ircmsg: # If the server pings us then we've got to respond!
+      reply = ircmsg.split("PING :")[1] # In some IRCds it is mandatory to reply to PING the same message we recieve
+      ping(reply)
       
-      # Now that we have the nicks we can decide what to do with them depending on the command
-      if "!randkick" in lastCommand:
-        lastCommand = ''
-        randKick(nicks, chan)
+    if " 353 " in ircmsg:
+      try:
+        # ":irc.catiechat.net 353 testbot = #test :KernelPone ~b0nk CommVenus @testbot " 
+        chan = ircmsg.split(" = ")[1].split(' ')[0]
+        ircmsg = ircmsg.split(':')[2] # Returns raw list of nicks
+        ircmsg = ircmsg.translate(None, '~@+&%') # Removes user mode characters
+        ircmsg = ircmsg.rstrip(' ') # Removes an annoying SPACE char left by the server at the end of the string
+        ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
+        nicks = ircmsg.split(' ') # Puts nicks in an array
+        print prompt + nicks.__str__() # debugging
+        if botnick not in list(nicks):
+          ircsock.send("NAMES " + chan + '\n')
+        
+        # Now that we have the nicks we can decide what to do with them depending on the command
+        if "!randkick" in lastCommand:
+          lastCommand = ''
+          randKick(nicks, chan)
+        
+        if "!starttag" in lastCommand:
+          lastCommand = ''
+          if not isTagOn:
+            taggers = nicks
+            startTag(tmpstr)
+            tmpstr = ''
+          else:
+            sendChanMsg(chan, "The game is already in progress!")
+      except IndexError:
+        print prompt + "Something went wrong..."
+    
+    if " INVITE " + botnick + " :" in ircmsg:
+      tmpstr = ircmsg
+      # :testbot!~I@m.botxxy.you.see INVITE b0nk :#test
+      nick = getNick(tmpstr)
+      if nick not in ignUsrs:
+        target = tmpstr.split(':')[2]
+        print prompt + nick + " invited the bot to " + target + ". Joining..."
+        joinChan(target)
+        sendChanMsg(target, "Thank you for inviting me here " + nick + '!')
+        tmpstr = ''
+    
+    if ":hello " + botnick in ircmsg.lower() or ":hi " + botnick in ircmsg.lower(): # If we can find "Hello/Hi testbot" it will call the function hello(nick)
+      hello(ircmsg)
       
-      if "!starttag" in lastCommand:
-        lastCommand = ''
-        if not isTagOn:
-          taggers = nicks
-          startTag(tmpstr)
-          tmpstr = ''
-        else:
-          sendChanMsg(chan, "The game is already in progress!")
-    except IndexError:
-      print prompt + "Something went wrong..."
-  
-  if " INVITE " + botnick + " :" in ircmsg:
-    tmpstr = ircmsg
-    # :testbot!~I@m.botxxy.you.see INVITE b0nk :#test
-    nick = getNick(tmpstr)
-    if nick not in ignUsrs:
-      target = tmpstr.split(':')[2]
-      print prompt + nick + " invited the bot to " + target + ". Joining..."
-      joinChan(target)
-      sendChanMsg(target, "Thank you for inviting me here " + nick + '!')
-      tmpstr = ''
-  
-  if ":hello " + botnick in ircmsg.lower() or ":hi " + botnick in ircmsg.lower(): # If we can find "Hello/Hi testbot" it will call the function hello(nick)
-    hello(ircmsg)
+    if ":!help" in ircmsg: # checks for !help
+      helpcmd(ircmsg)
     
-  if ":!help" in ircmsg: # checks for !help
-    helpcmd(ircmsg)
-  
-  if ":!ident" in ircmsg:
-    user = getUser(ircmsg)
-    if user == "b0nk!~LoC@fake.dimension":
-      identify()
+    if ":!ident" in ircmsg:
+      user = getUser(ircmsg)
+      if user == "b0nk!~LoC@fake.dimension":
+        identify()
+      
+    if ":!die" in ircmsg: #checks for !die
+      user = getUser(ircmsg)
+      if user == "b0nk!~LoC@fake.dimension": # TODO: use auth
+        quitIRC()
+        break
+      else:
+        nick = getNick(ircmsg)
+        print prompt + nick + " tried to kill the bot. Sending warning..."
+        sendNickMsg(nick, "I'm afraid I can't let you do that " + nick + "...")
+      
+    if ":!invite" in ircmsg:
+      inviteCmd(ircmsg)
+      
+    if ":!voice" in ircmsg:
+      voiceCmd(ircmsg)
+      
+    if ":!devoice" in ircmsg:
+      devoiceCmd(ircmsg)
+      
+    if ":!op" in ircmsg:
+      opCmd(ircmsg)
+      
+    if ":!deop" in ircmsg:
+      deopCmd(ircmsg)
     
-  if ":!die" in ircmsg: #checks for !die
-    user = getUser(ircmsg)
-    if user == "b0nk!~LoC@fake.dimension": # TODO: use auth
-      quitIRC()
-      break
-    else:
+    if ":!hop" in ircmsg:
+      hopCmd(ircmsg)
+      
+    if ":!dehop" in ircmsg:
+      dehopCmd(ircmsg)
+    
+    if ":!kick" in ircmsg:
+      kickCmd(ircmsg)
+      
+    if ":!rtd" in ircmsg:
+      dice(ircmsg)
+      
+    if ":!randkick" in ircmsg:
       nick = getNick(ircmsg)
-      print prompt + nick + " tried to kill the bot. Sending warning..."
-      sendNickMsg(nick, "I'm afraid I can't let you do that " + nick + "...")
+      if nick not in ignUsrs:
+        if '#' not in ircmsg.split(':')[1]:
+          sendNickMsg(nick, "You are not in a channel!")
+        else:
+          chan = getChannel(ircmsg)
+          ircsock.send("NAMES " + chan + '\n')
+          print prompt + "Getting NAMES from " + chan
+          lastCommand = "!randkick"
+      
+    if ":!topic" in ircmsg:
+      topicCmd(ircmsg)
     
-  if ":!invite" in ircmsg:
-    inviteCmd(ircmsg)
+    if ":!pass" in ircmsg:
+      authCmd(ircmsg)
     
-  if ":!voice" in ircmsg:
-    voiceCmd(ircmsg)
+    if ":!quote" in ircmsg:
+      quoteCmd(ircmsg)
+      
+    if ":!addquote" in ircmsg:
+      addQuote(ircmsg)
+      
+    if ":!blueberry" in ircmsg: #this will broadcast all of blueberrys favorite quotes :3
+      bbfquotes(ircmsg)
     
-  if ":!devoice" in ircmsg:
-    devoiceCmd(ircmsg)
+    if " JOIN " in ircmsg:
+      sendGreet(ircmsg)
+      
+    if " PART " in ircmsg:
+      sendPart(ircmsg, False)
+      
+    if " QUIT " in ircmsg:
+      sendPart(ircmsg, True)
+      
+    if ":!setjoinmsg" in ircmsg:
+      setGreetCmd(ircmsg)
+      
+    if ":!setquitmsg" in ircmsg:
+      setPartCmd(ircmsg)
     
-  if ":!op" in ircmsg:
-    opCmd(ircmsg)
+    if ":!tag" in ircmsg:
+      tag(ircmsg)
+      
+    if ":!starttag" in ircmsg:
+      nick = getNick(ircmsg)
+      if nick not in ignUsrs:
+        if '#' not in ircmsg.split(':')[1]:
+          sendNickMsg(nick, "You are not in a channel!")
+        else:
+          chan = getChannel(ircmsg)
+          ircsock.send("NAMES " + chan + '\n')
+          print prompt + "Getting NAMES from " + chan
+          lastCommand = "!starttag"
+          tmpstr = ircmsg
     
-  if ":!deop" in ircmsg:
-    deopCmd(ircmsg)
-  
-  if ":!hop" in ircmsg:
-    hopCmd(ircmsg)
+    if ":!endtag" in ircmsg:
+      endTag(ircmsg)
+      
+    if ":!settagged" in ircmsg:
+      setTagged(ircmsg)
+      
+    if ":!rose" in ircmsg:
+      rose(ircmsg)
+      
+    if ":!boobs" in ircmsg:
+      boobs(ircmsg)
+      
+    if ":!say" in ircmsg:
+      sayCmd(ircmsg)
+      
+    if ":!8ball" in ircmsg:
+      eightBallCmd(ircmsg)
+      
+    if ":!ign" in ircmsg:
+      ignCmd(ircmsg)
     
-  if ":!dehop" in ircmsg:
-    dehopCmd(ircmsg)
-  
-  if ":!kick" in ircmsg:
-    kickCmd(ircmsg)
+    if ":.np" in ircmsg:
+      nowPlaying(ircmsg)
     
-  if ":!rtd" in ircmsg:
-    dice(ircmsg)
+    if ":.setuser" in ircmsg:
+      setLfmUserCmd(ircmsg)
+      
+    if ":.compare" in ircmsg:
+      compareLfmUsers(ircmsg)
+      
+    '''
+    if "!google" in ircmsg:
+      gSearch(ircmsg)
+    '''
+      
+    if "!twitter" in ircmsg:
+      getTweet(ircmsg)
     
-  if ":!randkick" in ircmsg:
-    nick = getNick(ircmsg)
-    if nick not in ignUsrs:
-      if '#' not in ircmsg.split(':')[1]:
-        sendNickMsg(nick, "You are not in a channel!")
-      else:
-        chan = getChannel(ircmsg)
-        ircsock.send("NAMES " + chan + '\n')
-        print prompt + "Getting NAMES from " + chan
-        lastCommand = "!randkick"
-    
-  if ":!topic" in ircmsg:
-    topicCmd(ircmsg)
-  
-  if ":!pass" in ircmsg:
-    authCmd(ircmsg)
-  
-  if ":!quote" in ircmsg:
-    quoteCmd(ircmsg)
-    
-  if ":!addquote" in ircmsg:
-    addQuote(ircmsg)
-    
-  if ":!blueberry" in ircmsg: #this will broadcast all of blueberrys favorite quotes :3
-    bbfquotes(ircmsg)
-  
-  if " JOIN " in ircmsg:
-    sendGreet(ircmsg)
-    
-  if " PART " in ircmsg:
-    sendPart(ircmsg, False)
-    
-  if " QUIT " in ircmsg:
-    sendPart(ircmsg, True)
-    
-  if ":!setjoinmsg" in ircmsg:
-    setGreetCmd(ircmsg)
-    
-  if ":!setquitmsg" in ircmsg:
-    setPartCmd(ircmsg)
-  
-  if ":!tag" in ircmsg:
-    tag(ircmsg)
-    
-  if ":!starttag" in ircmsg:
-    nick = getNick(ircmsg)
-    if nick not in ignUsrs:
-      if '#' not in ircmsg.split(':')[1]:
-        sendNickMsg(nick, "You are not in a channel!")
-      else:
-        chan = getChannel(ircmsg)
-        ircsock.send("NAMES " + chan + '\n')
-        print prompt + "Getting NAMES from " + chan
-        lastCommand = "!starttag"
-        tmpstr = ircmsg
-  
-  if ":!endtag" in ircmsg:
-    endTag(ircmsg)
-    
-  if ":!settagged" in ircmsg:
-    setTagged(ircmsg)
-    
-  if ":!rose" in ircmsg:
-    rose(ircmsg)
-    
-  if ":!boobs" in ircmsg:
-    boobs(ircmsg)
-    
-  if ":!say" in ircmsg:
-    sayCmd(ircmsg)
-    
-  if ":!8ball" in ircmsg:
-    eightBallCmd(ircmsg)
-    
-  if ":!ign" in ircmsg:
-    ignCmd(ircmsg)
-  
-  if ":.np" in ircmsg:
-    nowPlaying(ircmsg)
-  
-  if ":.setuser" in ircmsg:
-    setLfmUserCmd(ircmsg)
-    
-  if ":.compare" in ircmsg:
-    compareLfmUsers(ircmsg)
-    
-  '''
-  if "!google" in ircmsg:
-    gSearch(ircmsg)
-  '''
-    
-  if "!twitter" in ircmsg:
-    getTweet(ircmsg)
-  
-  if ircmsg is None or '':
-    print prompt + "Bot timedout / killed???"
-    quitIRC()
+except socket.error as e:
+  print prompt + "Bot timedout / killed???"
+  break
