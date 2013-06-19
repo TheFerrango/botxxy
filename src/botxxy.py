@@ -1354,5 +1354,5 @@ try:
       getTweet(ircmsg)
     
 except socket.error as e:
+  print e.strerror
   print prompt + "Bot timedout / killed???"
-  break
