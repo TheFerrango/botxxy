@@ -1091,7 +1091,7 @@ def getTweet(msg):
         global t_api
         try:
           tweets = t_api.GetUserTimeline(None, t_user)
-          tweet = tweets[index].GetText().encode('utf8')
+          tweet = tweets[index].GetText().encode('utf8').replace('\n', ' ')
           t_user = t_api.GetUser(None, t_user)._screen_name.encode('utf8')
           sendChanMsg(chan, t_logo + '@' + t_user + ': ' + tweet)
           print prompt + t_user + ' ' + index.__str__() + ' ' + tweet
