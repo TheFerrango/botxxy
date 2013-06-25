@@ -1346,11 +1346,11 @@ try:
       compareLfmUsers(ircmsg)
       
     '''
-    if "!google" in ircmsg:
+    if ":!google" in ircmsg:
       gSearch(ircmsg)
     '''
       
-    if "!twitter" in ircmsg:
+    if ":!twitter" in ircmsg:
       getTweet(ircmsg)
     
 except socket.error as e:
