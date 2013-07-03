@@ -211,6 +211,8 @@ def loadLfm():
   lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SEC, username = '', password_hash = '')
   print prompt + "last.fm interface -> LOADED"
   
+# Twitter API
+  
 def loadTwitter():
   lines = [line.strip() for line in open('twitter.txt', 'r')]
   CON_KEY = filter(lambda x: x in string.printable, lines[0])
@@ -859,9 +861,10 @@ def rose(msg):
 
           #CAKE
 
-""" this function actually prints the cake, since it's a multi-line
-    ascii art thing and i didn't want to rewrite its code everywhere
-"""
+'''
+  this function actually prints the cake, since it's a multi-line
+  ascii art thing and i didn't want to rewrite its code everywhere
+'''
 def printCake(chan):
   sendChanMsg(chan, cakestr_0)
   sendChanMsg(chan, cakestr_1)
@@ -1177,7 +1180,7 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
     time.sleep(0.5)
     sendNickMsg(nick, "You can also invite me to a channel and I'll thank you for inviting me there.")
     time.sleep(0.5)
-    sendNickMsg(nick, "General commands: !help !invite !rtd !quote !addquote !setjoinmsg !setquitmsg !starttag !endtag !tag !rose !boobs !8ball !pass")
+    sendNickMsg(nick, "General commands: !help !invite !rtd !quote !addquote !setjoinmsg !setquitmsg !starttag !endtag !tag !rose !boobs !8ball !pass !cake")
     time.sleep(0.5)
     sendNickMsg(nick, lfm_logo + "commands: .setuser .np .compare")
     time.sleep(0.5)
