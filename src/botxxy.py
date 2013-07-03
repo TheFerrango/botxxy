@@ -59,6 +59,7 @@ parts = []
 eightball = []
 quotes = []
 lfmUsers = []
+cakeDeaths = []
 
 taggers = []
 tagged = ''
@@ -68,6 +69,10 @@ lastCommand = ''
 tmpstr = ''
 rosestr = "3---<-<-{4@"
 boobsstr = "(.Y.)"
+cakestr_0 = "    _|||||_"
+cakestr_1 = "   {~*~*~*~}"
+cakestr_2 = " __{*~*~*~*}__ "
+cakestr_3 = "`-------------`"
 prompt = ">> "
 
 # Last.fm vars
@@ -183,7 +188,14 @@ def loadQuotes():
   global quotes
   quotes = [line.strip() for line in open('quotes.txt', 'r')]
   print prompt + "Quotes -> LOADED"
-  
+
+# Cakes
+
+def loadCakes():
+  global cakeDeaths
+  cakeDeaths = [line.strip() for line in open('cake.txt', 'r')]
+  print prompt + "Cake -> LOADED"
+
 # Last.fm Users
 
 def loadLfmUsers():
@@ -843,6 +855,48 @@ def rose(msg):
           print prompt + nick + " sent a rose to " + target
           sendChanMsg(chan, nick + " gives a rose to " + target)
           sendChanMsg(chan, '[' + nick + ']' + ' ' + rosestr + ' ' + '[' + target + ']')
+
+
+          #CAKE
+
+""" this function actually prints the cake, since it's a multi-line
+    ascii art thing and i didn't want to rewrite its code everywhere
+"""
+def printCake(chan):
+  sendChanMsg(chan, cakestr_0)
+  sendChanMsg(chan, cakestr_1)
+  sendChanMsg(chan, cakestr_2)
+  sendChanMsg(chan, cakestr_3)
+
+def cake(msg):
+  nick = getNick(msg)
+  global ignUsrs
+  if nick not in ignUsrs:
+    if '#' not in msg.split(':')[1]:
+      print prompt + nick + " sent !cake outside of a channel"
+      sendNickMsg(nick, "You are not in a channel")
+    else:
+      chan = getChannel(msg)
+      target = msg.split("!cake")[1].lstrip(' ')
+      if not target: # Checks for a target to promise some cake
+        sendChanMsg(chan , nick + ", there is science to do. Usage: !cake <nick>")
+      else:
+        target = target.rstrip(' ')
+        if nick == target: # Checks if nick is eating the cake by himself
+          print prompt + nick + " is tricking test subjects and eating the cake"
+          sendChanMsg(chan, "Those test subjects won't test for free' " + nick + ", leave some cake for them")
+        elif target == botnick:
+          print prompt + nick + " gives some tasty cake to the bot."
+          printCake(chan)
+          sendChanMsg(chan, "Thank you " + nick + "!")
+          sendChanMsg(chan, "It's so delicious and moist.")
+        else: # Success (normal case)
+          print prompt + nick + " is sharing some cake"
+          if random.randint(1,100) > 95:
+            sendChanMsg(chan, nick + " gives some tasty cake to " + target)
+            printCake(chan)
+          else:
+            sendChanMsg(chan, "unfortunately, " + target + " " + random.choice(cakeDeaths))
         
           #BOOBS
           
@@ -1326,6 +1380,9 @@ try:
       
     if ":!boobs" in ircmsg:
       boobs(ircmsg)
+
+    if ":!cake" in ircmsg:
+      cake(ircmsg)
       
     if ":!say" in ircmsg:
       sayCmd(ircmsg)
