@@ -1202,6 +1202,7 @@ load8ball()
 loadLfmUsers()
 loadLfm()
 loadTwitter()
+loadCakes()
 
 # Connection
 try:
