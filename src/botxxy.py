@@ -902,7 +902,7 @@ def eightBallCmd(msg):
       question = msg.split(':!8ball')[1].lstrip(' ')
       if not question or '?' not in question:
         print prompt + nick + " didn't ask a question"
-        sendChanMsg(chan, "How about you ask me a question properly " + nick + "? Usage !8ball [<question>]?")
+        sendChanMsg(chan, "How about you ask me a question properly " + nick + "? Usage: !8ball [<question>]?")
       else:
         global eightball
         answer = random.choice(eightball)
@@ -1029,7 +1029,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
           print e.details
           sendChanMsg(chan, lfm_logo + "Error: " + e.details.__str__())
           return None # GTFO
-        if lfm_user.get_playcount().__int__() < 1: # checks if user has scrobbled anything EVER
+        if lfm_user.get_playcount() < 1: # checks if user has scrobbled anything EVER
           sendChanMsg(chan, lfm_logo + target + " has an empty library")
           print prompt + target + " has an empty library" # no need to get a nowplaying when the library is empty
         else:
@@ -1047,22 +1047,21 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
               playCount = 1
             
             np = np.get_add_info(target)
+            loved = ''
             
             if np.userloved == '1': # checks if np is a loved track to show when brodcasted to channel
               loved = " 4<3"
-            else:
-              loved = ''
             
             raw_tags = np.get_top_tags(5)
-            if raw_tags.__len__() < 1: # some tracks have no tags therefor we request the artist tags
+            if not raw_tags: # some tracks have no tags so we request the artist tags
               raw_tags = np.artist.get_top_tags(5)
-            tags = ''
+            tags = ', '
             while raw_tags:
               tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
             tags = tags.rstrip(", ") # removes last comma
             
-            sendChanMsg(chan, lfm_logo + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays, " + tags + ")")# broadcast to channel
-            print prompt + target + " is now playing: " + artist_name + " - " + track + loved + " (" + playCount.__str__() + " plays, " + tags + ")"
+            sendChanMsg(chan, lfm_logo + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays" + tags + ")")# broadcast to channel
+            print prompt + target + " is now playing: " + artist_name + " - " + track + loved + " (" + playCount.__str__() + " plays" + tags + ")"
               #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
 
@@ -1153,6 +1152,7 @@ loadTwitter()
 try:
   ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TODO: IPv6 ???
   ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
+  ircsock.settimeout(250.0)
   ircsock.connect((server, ssl_port)) # Here we connect to the server using the port defined above
   ircsock.send("USER " + botuser + ' ' + bothost + ' ' + botserver + ' ' + botname + '\n') # Bot authentication
   time.sleep(3)
@@ -1355,4 +1355,4 @@ try:
     
 except socket.error as e:
   print e.strerror
-  print prompt + "Bot timedout / killed???"
+  print prompt + "Bot killed / timedout"
