@@ -8,7 +8,7 @@
 
 '''
 @author: b0nk
-@version: 1.1
+@version: 1.1.1
 '''
 
 # Import the necessary libraries.
@@ -96,15 +96,18 @@ t_api = None
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
 
+def myprint(msg):
+  print "%s%s" % (prompt, msg)
+
 def ping(reply): # This is our first function! It will respond to server Pings.
-  ircsock.send("PONG :" + reply + '\n') # In some IRCds it is mandatory to reply to PING the same message we recieve
-  #print prompt + "PONG :" + reply
+  ircsock.send("PONG :%s\n" % (reply)) # In some IRCds it is mandatory to reply to PING the same message we recieve
+  #myprint("PONG :%s" % (reply))
 
 def sendChanMsg(chan, msg): # This sends a message to the channel 'chan'
-  ircsock.send("PRIVMSG " + chan + " :" + msg + '\n')
+  ircsock.send("PRIVMSG %s :%s\n" % (chan, msg))
   
 def sendNickMsg(nick, msg): # This sends a notice to the nickname 'nick'
-  ircsock.send("NOTICE " + nick + " :" + msg + '\n')
+  ircsock.send("NOTICE %s :%s\n" % (nick, msg))
   
 def getNick(msg): # Returns the nickname of whoever requested a command from a RAW irc privmsg. Example in commentary below.
   # ":b0nk!LoC@fake.dimension PRIVMSG #test :lolmessage"
@@ -119,25 +122,25 @@ def getChannel(msg): # Returns the channel from whereever a command was requeste
   return msg.split(" PRIVMSG ")[-1].split(' :')[0]
 
 def joinChan(chan): # This function is used to join channels.
-  ircsock.send("JOIN " + chan + '\n')
+  ircsock.send("JOIN %s\n" % (chan))
 
 def joinChans(chans): # This is used to join all the channels in the array 'chans'
   for i in chans:
-    ircsock.send("JOIN " + i + '\n')
+    ircsock.send("JOIN %s\n" % (i))
 
 def hello(msg): # This function responds to a user that inputs "Hello testbot"
   nick = getNick(msg)
   global ignUsrs
   if nick not in ignUsrs:
     chan = getChannel(msg)
-    print prompt + nick + " said hi in " + chan
-    sendChanMsg(chan, "Hello " + nick + "! Type !help for more information.")
+    myprint("%s said hi in %s" % (nick, chan))
+    sendChanMsg(chan, "Hello %s! Type !help for more information." % (nick))
   
 def identify():
-  ircsock.send("NICK " + botnick + '\n') # Here we actually assign the nick to the bot
+  ircsock.send("NICK %s\n" % (botnick)) # Here we actually assign the nick to the bot
   time.sleep(3)
-  ircsock.send("NICKSERV IDENTIFY " + botpassword + '\n') # Identifies the bot's nickname with nickserv
-  print prompt + "Bot identified"
+  ircsock.send("NICKSERV IDENTIFY %s\n" % (botpassword)) # Identifies the bot's nickname with nickserv
+  myprint("Bot identified")
 
 #========================END OF BASIC FUNCTIONS=====================
 
@@ -145,63 +148,63 @@ def identify():
 
 def idleRPG():
   ircsock.send("PRIVMSG IdleBot :LOGIN derpbot 123456\n")
-  print prompt + "Logged in to IdleRPG"
+  myprint("Logged in to IdleRPG")
 
 # Authorized
 
 def loadAuth():
   global authDB
   authDB = [line.strip() for line in open('auth.txt', 'r')]
-  print prompt + "Auth -> LOADED"
+  myprint("Auth -> LOADED")
 
 # Ignores
   
 def loadIgn():
   global ignUsrs
   ignUsrs = [line.strip() for line in open('ign.txt', 'r')]
-  print prompt + "Ign -> " + ignUsrs.__str__()
+  myprint("Ign -> %s" % (str(ignUsrs)))
   
 # Greets
 
 def loadGreets():
   global greets
   greets = [line.strip() for line in open('greet.txt', 'r')]
-  print prompt + "Greets -> LOADED"
+  myprint("Greets -> LOADED")
   
 # Parts
   
 def loadParts():
   global parts
   parts = [line.strip() for line in open('part.txt', 'r')]
-  print prompt + "Parts -> LOADED"
+  myprint("Parts -> LOADED")
   
 # 8ball
 
 def load8ball():
   global eightball
   eightball = [line.strip() for line in open('8ball.txt', 'r')]
-  print prompt + "8ball -> LOADED"
+  myprint("8ball -> LOADED")
   
 # Quotes
 
 def loadQuotes():
   global quotes
   quotes = [line.strip() for line in open('quotes.txt', 'r')]
-  print prompt + "Quotes -> LOADED"
+  myprint("Quotes -> LOADED")
 
 # Cakes
 
 def loadCakes():
   global cakeDeaths
   cakeDeaths = [line.strip() for line in open('cake.txt', 'r')]
-  print prompt + "Cake -> LOADED"
+  myprint("Cake -> LOADED")
 
 # Last.fm Users
 
 def loadLfmUsers():
   global lfmUsers
   lfmUsers = [line.strip() for line in open('lfmusers.txt', 'r')]
-  print prompt + "LfmUsers -> LOADED"
+  myprint("LfmUsers -> LOADED")
   
 def loadLfm():
   lines = [line.strip() for line in open('lfm.txt', 'r')]
@@ -209,7 +212,7 @@ def loadLfm():
   API_SEC = lines[1]
   global lastfm
   lastfm = pylast.LastFMNetwork(api_key = API_KEY, api_secret = API_SEC, username = '', password_hash = '')
-  print prompt + "last.fm interface -> LOADED"
+  myprint("last.fm interface -> LOADED")
   
 # Twitter API
   
@@ -221,7 +224,7 @@ def loadTwitter():
   ACC_SEC = lines[3]
   global t_api
   t_api = twitter.Api(consumer_key = CON_KEY, consumer_secret = CON_SEC, access_token_key = ACC_TOK, access_token_secret = ACC_SEC)
-  print prompt + "twitter API -> LOADED"
+  myprint("twitter API -> LOADED")
 
 #========================END OF INITIALIZATIONS=====================
 
@@ -238,7 +241,7 @@ def authCmd(msg): # Authenticates a nick with the bot
           authDB[i] = None
           authDB.remove(None)
           authUsrs.remove(nick)
-          print prompt + authDB.__str__()
+          myprint(str(authDB))
           with open("auth.txt", 'w') as f:
             for i in authDB:
               f.write('%s\n' % i)
@@ -253,16 +256,17 @@ def authCmd(msg): # Authenticates a nick with the bot
         sendNickMsg(nick, "Bad arguments. Usage: !pass <password>")
       else:
         password = hashlib.sha256(password).hexdigest() # A HEX representation of the SHA-256 encrypted password
-        print prompt + "ENC: " + password
+        myprint("ENC: %s" % (password))
         
         for i, content in enumerate(authDB):
           if nick + "|!|" + password in content:
             authUsrs.append(nick)
-            print prompt + nick + " is authorized.\n" + prompt + authUsrs.__str__()
+            myprint("%s is authorized." % (nick))
+            myprint(str(authUsrs))
             sendNickMsg(nick, "Password correct.")
             return None
 
-        print prompt + nick + " mistyped the password"
+        myprint("%s mistyped the password" % (nick))
         sendNickMsg(nick, "Password incorrect!")
 
           #INVITE
@@ -273,7 +277,7 @@ def inviteCmd(msg): # Parses the message to extract NICK and CHANNEL
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !invite outside of a channel"
+      myprint("%s sent !invite outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -281,11 +285,11 @@ def inviteCmd(msg): # Parses the message to extract NICK and CHANNEL
       if not target: # Checks if user inserted a nickname to invite
         sendChanMsg(chan, "Bad arguments. Usage: !invite <nick>")
       else: # Success
-        print prompt + "Inviting " + target + " to channel " + chan
-        sendChanMsg(chan, "Inviting " + target + " here...")
-        invite(target,chan)
+        myprint("Inviting %s to channel %s" % (target, chan))
+        sendChanMsg(chan, "Inviting %s here..." % (target))
+        invite(target, chan)
   
-def invite(nick,chan): # Invites given nickname to present channel
+def invite(nick, chan): # Invites given nickname to present channel
   ircsock.send("INVITE " + nick + ' ' + chan + '\n')
 
           #VOICE
@@ -295,7 +299,7 @@ def voiceCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !voice outside of a channel"
+      myprint("%s sent !voice outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -303,11 +307,11 @@ def voiceCmd(msg):
       if not target: # Checks if user inserted a nickname to voice
         sendChanMsg(chan, "Bad arguments. Usage: !voice <nick>")
       else: # Success
-        print prompt + "Voicing " + target + " on channel " + chan
-        voice(target,chan)
+        myprint("Voicing %s on channel %s" % (target, chan))
+        voice(target, chan)
 
-def voice(nick,chan):
-  ircsock.send("MODE " + chan + " +v " + nick + '\n')
+def voice(nick, chan):
+  ircsock.send("MODE %s +v %s\n" % (chan, nick))
 
           #DEVOICE
 
@@ -316,7 +320,7 @@ def devoiceCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !devoice outside of a channel"
+      myprint("%s sent !devoice outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -324,13 +328,13 @@ def devoiceCmd(msg):
       if not target: # Checks if user inserted a nickname to devoice
         sendChanMsg(chan, "Bad arguments. Usage: !devoice <nick>")
       elif target != botnick: # Success
-        print prompt + "Devoicing " + target + " on channel " + chan
-        devoice(target,chan)
+        myprint("Devoicing %s on channel %s" % (target, chan))
+        devoice(target, chan)
       else:
         sendChanMsg(chan, "Don't you dare make me demote myself.")
 
-def devoice(nick,chan):
-  ircsock.send("MODE " + chan + " -v " + nick + '\n')
+def devoice(nick, chan):
+  ircsock.send("MODE %s -v %s\n" % (chan, nick))
 
           #OP
 
@@ -339,7 +343,7 @@ def opCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !op outside of a channel"
+      myprint("%s sent !op outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -347,11 +351,11 @@ def opCmd(msg):
       if not target: # Checks if user inserted a nickname to op
         sendChanMsg(chan, "Bad arguments. Usage: !op <nick>")
       else: # Success
-        print prompt + "Giving op to " + target + " on channel " + chan
-        op(target,chan)
+        myprint("Giving op to %s on channel %s" % (target, chan))
+        op(target, chan)
 
-def op(nick,chan):
-  ircsock.send("MODE " + chan + " +o " + nick + '\n')
+def op(nick, chan):
+  ircsock.send("MODE %s +o %s\n" % (chan, nick))
 
           #DEOP
 
@@ -360,7 +364,7 @@ def deopCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !deop outside of a channel"
+      myprint("%s sent !deop outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -368,13 +372,13 @@ def deopCmd(msg):
       if not target: # Checks if user inserted a nickname to deop
         sendChanMsg(chan, "Bad arguments. Usage: !deop <nick>")
       elif target != botnick: # Success
-        print prompt + "Taking op from " + target + " on channel " + chan
-        deop(target,chan)
+        myprint("Taking op from %s on channel %s" % (target, chan))
+        deop(target, chan)
       else:
         sendChanMsg(chan, "Don't you dare make me demote myself.")
 
-def deop(nick,chan):
-  ircsock.send("MODE " + chan + " -o " + nick + '\n')
+def deop(nick, chan):
+  ircsock.send("MODE %s -o %s\n" % (chan, nick))
 
           #HOP
 
@@ -383,7 +387,7 @@ def hopCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !hop outside of a channel"
+      myprint("%s sent !hop outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -391,11 +395,11 @@ def hopCmd(msg):
       if not target: # Checks if user inserted a nickname to hop
         sendChanMsg(chan, "Bad arguments. Usage: !hop <nick>")
       else: # Success
-        print prompt + "Giving hop to " + target + " on channel " + chan
-        hop(target,chan)
+        myprint("Giving hop to %s on channel %s" % (target, chan))
+        hop(target, chan)
 
-def hop(nick,chan):
-  ircsock.send("MODE " + chan + " +h " + nick + '\n')
+def hop(nick, chan):
+  ircsock.send("MODE %s +h %s\n" % (chan, nick))
 
           #DEHOP
 
@@ -404,7 +408,7 @@ def dehopCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !dehop outside of a channel"
+      myprint("%s sent !dehop outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -412,13 +416,13 @@ def dehopCmd(msg):
       if not target: # Checks if user inserted a nickname to dehop
         sendChanMsg(chan, "Bad arguments. Usage: !dehop <nick>")
       elif target != botnick: # Success
-        print prompt + "Taking hop from " + target + " on channel " + chan
-        dehop(target,chan)
+        myprint("Taking hop from %s on channel %s" % (target, chan))
+        dehop(target, chan)
       else:
         sendChanMsg(chan, "Don't you dare make me demote myself.")
 
-def dehop(nick,chan):
-  ircsock.send("MODE " + chan + " -h " + nick + '\n')
+def dehop(nick, chan):
+  ircsock.send("MODE %s -h %s\n" % (chan, nick))
 
           #TOPIC
 
@@ -427,21 +431,21 @@ def topicCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !topic outside of a channel"
+      myprint("%s sent !topic outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
       # ":b0nk!LoC@fake.dimension PRIVMSG #test :!topic 1 2 3 test"
       topic = msg.split("!topic")[1].lstrip(' ')
       if not topic:
-        print prompt + "New topic is empty"
+        myprint("New topic is empty")
         sendChanMsg(chan, "Bad arguments. Usage: !topic [<new topic>]")
       else:
-        print prompt + nick + " changed " + chan + " 's topic to '" + topic + "' "
+        myprint("%s changed %s's topic to '%s'" % (nick, chan, topic))
         changeTopic(chan, topic)
 
 def changeTopic(chan, topic):
-  ircsock.send("TOPIC " + chan + " :" + topic + '\n')
+  ircsock.send("TOPIC %s :%s\n" % (chan, topic))
 
           #KICK
 
@@ -450,7 +454,7 @@ def kickCmd(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs and nick in authUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !kick outside of a channel"
+      myprint("%s sent !kick outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -458,32 +462,32 @@ def kickCmd(msg):
       if not target: # Checks if user inserted a nickname to kick
         sendChanMsg(chan, "Bad arguments. Usage: !kick <nick>")
       elif target == botnick:
-        print prompt + nick + " tried to kick the bot!"
-        sendChanMsg(chan, "Don't make me kick myself out " + nick + '!')
+        myprint("%s tried to kick the bot!" % (nick))
+        sendChanMsg(chan, "Don't make me kick myself out %s!" % (nick))
       else:
-        print prompt + "Kicking " + target + " from " + chan
-        kick(target,chan,0)
+        myprint("Kicking %s from %s..." % (target, chan))
+        kick(target, chan, 0)
 
-def kick(nick,chan,isRand):
+def kick(nick, chan, isRand):
   if isRand:
-    sendChanMsg(chan, "Randomly kicking " + nick + " from " + chan)
-    ircsock.send("KICK " + chan + ' ' + nick + " lol_butthurt\n")
+    sendChanMsg(chan, "Randomly kicking %s from %s" % (nick, chan))
+    ircsock.send("KICK %s %s lol_butthurt\n" % (chan, nick))
   else:
-    sendChanMsg(chan, "Kicking " + nick + " from " + chan)
-    ircsock.send("KICK " + chan + ' ' + nick + " lol_butthurt\n")
+    sendChanMsg(chan, "Kicking %s from %s" % (nick, chan))
+    ircsock.send("KICK %s %s lol_butthurt\n" % (chan, nick))
 
           #RANDOM KICK
 
 def randKick(nicks, chan):
   size = len(nicks) - 1 # Correcting offset (this means if we have an array with 5 elements we should pick a random number between 0 and 4)
-  rand = random.randint(0,size) # Picks a random number
+  rand = random.randint(0, size) # Picks a random number
   if botnick not in nicks[rand]: # Prevents bot from being kicked by !randkick
-    print prompt + "Randomly kicking " + nicks[rand].__str__() + " from channel " + chan
-    kick (nicks[rand],chan,1)
+    myprint("Randomly kicking %s from %s" % (nicks[rand], chan))
+    kick (nicks[rand], chan, 1)
   else:
-    print prompt + "Bot will not be kicked. Picking another one..."
-    randKick(nicks,chan)
-    
+    myprint("Bot will not be kicked. Picking another one...")
+    randKick(nicks, chan)
+
           # IGNORE
 
 def ignCmd(msg):
@@ -502,8 +506,8 @@ def ign(nick, target):
     for elem in ignUsrs:
       f.write("%s\n" % elem)
   f.closed
-  sendNickMsg(nick, target + " ignored!")
-  print prompt + "Ign -> " + ignUsrs.__str__()
+  sendNickMsg(nick, "%s ignored!" % (target))
+  myprint("Ign -> %s" % (str(ignUsrs)))
 
           #DICE
 
@@ -512,9 +516,9 @@ def dice(msg):
   global ignUsrs
   if nick not in ignUsrs:
     chan = getChannel(msg)
-    dice = random.randint(1,6).__str__() # converts the integer dice to a string to be concatenated in the final output
-    print prompt + nick + " rolled the dice and got a " + dice
-    sendChanMsg(chan, nick + " rolled a " + dice)
+    dice = str(random.randint(1,6)) # converts the integer dice to a string to be concatenated in the final output
+    myprint("%s rolled the dice and got a %s" % (nick, dice))
+    sendChanMsg(chan, "%s rolled a %s" % (nick, dice))
 
           #QUOTES
 
@@ -523,7 +527,7 @@ def quoteCmd(msg): #TODO: quote IDs
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !quote outside of a channel"
+      myprint("%s sent !quote outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -540,10 +544,11 @@ def quoteCmd(msg): #TODO: quote IDs
       if line:
         author = line.split ("|!|")[0]
         quote = line.split ("|!|")[1]
-        print prompt + author + '\n' + prompt + quote #debugging
-        sendChanMsg(chan, "[Quote] " + quote)
+        myprint(author + "%s" % (author)) #debugging
+        myprint("%s" % (quote)) #debugging
+        sendChanMsg(chan, "[Quote] %s" % (quote))
       else:
-        print prompt + "File quotes.txt is empty"
+        myprint("File quotes.txt is empty")
         sendChanMsg(chan, "There are no quotes on the DB. Could something be wrong???")
 
 def addQuote(msg):
@@ -551,7 +556,7 @@ def addQuote(msg):
   global ignUsrs, authUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]: # Checks if quote was sent outside of a channel
-      print prompt + nick + " sent !addquote outside of a channel"
+      myprint("%s sent !addquote outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -562,7 +567,7 @@ def addQuote(msg):
       else:
         global quotes
         quotes.append(nick + "|!|" + newQuote)
-        print prompt + nick + " added '" + newQuote + "'\n"
+        myprint("%s added '%s'" % (nick, newQuote))
         with open("quotes.txt", 'w') as f:
           for i in quotes:
             f.write("%s\n" % i)
@@ -576,11 +581,11 @@ def bbfquotes(msg): # blueberryfox's private function
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !blueberry outside of a channel"
+      myprint("%s sent !blueberry outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
-      print prompt + "Sending blueberryfox's fav quotes to " + chan
+      myprint("Sending blueberryfox's fav quotes to %s" % (chan))
       sendChanMsg (chan, "Blueberryfoxes favorite Quotes: One, two, three, four, I declare a thumb war, five, six, seven, eight I use this hand to masturbate")
       time.sleep(1)
       sendChanMsg (chan, "I was like ohho!")
@@ -595,8 +600,8 @@ def setGreetCmd(msg):
   if nick not in ignUsrs:
     if '#' in msg.split(':')[1]: #let's make sure people use this privately so that people won't see the welcoming message until they join a channel
       chan = getChannel(msg)
-      print prompt + nick + " sent !setjoinmsg in " + chan + ". Sending warning..."
-      sendChanMsg(chan, "Don't do that in the channel " + nick)
+      myprint("%s sent !setjoinmsg in %s. Sending warning..." % (nick, chan))
+      sendChanMsg(chan, "Don't do that in the channel %s" % (nick))
       sendNickMsg(nick, "Send it as a notice or query(pvt)")
     else:
       newMsg = msg.split(":!setjoinmsg")[1].lstrip(' ') # Retrieves the entry message
@@ -609,23 +614,23 @@ def setGreet(nick, newMsg, toSet):
   global greets
   changed = False
   for idx, content in enumerate(greets): # Here we start scanning the array
-    if nick + "|!|" in content.__str__(): # In this case the user already has a greet message
+    if nick + "|!|" in str(content): # In this case the user already has a greet message
       if toSet: # This will happen if there is a new entry message and not an empty one
         greets[idx] = nick + "|!|" + newMsg # Changes the entry message to the new one
-        print prompt + "Resetting " + nick + "'s greet message to '" + newMsg + "' "
+        myprint("Resetting %s's greet message to '%s'" % (nick, newMsg))
         sendNickMsg(nick, "Entry message re-set!")
         changed = True
         break # We've found the nickname we can get out of the loop
       else: # This will happen if there is an empty entry message on an existing nick
         greets[idx] = None # Completely erases the content
         greets.remove(None)
-        print prompt + "Unsetting " + nick + "'s greet message"
+        myprint("Unsetting %s's greet message" % (nick))
         sendNickMsg(nick, "Entry message unset!")
         changed = True
         break # We've found the nickname we can get out of the loop
   if toSet and not changed: # this will happen if there is a message and we didn't find a nickname in the file which means it's the 1st time being used or it was erased previously
         greets.append(nick + "|!|" + newMsg) # Adds the nick and corresponding greet message
-        print prompt + "Setting " + nick + "'s greet message to '" + newMsg + "' "
+        myprint("Setting %s's greet message to '%s'" % (nick, newMsg))
         sendNickMsg(nick, "Entry message set!")
   with open("greet.txt", 'w') as f:
     for i in greets:
@@ -643,7 +648,7 @@ def sendGreet(msg):
     for elem in greets:
       if nick + "|!|" in elem:
         greet = elem.split("|!|")[1]
-        print prompt + "Greeting " + nick + " in " + chan
+        myprint("Greeting %s in %s" % (nick, chan))
         break
     if greet:
       sendChanMsg(chan, greet)
@@ -656,8 +661,8 @@ def setPartCmd(msg):
   if nick not in ignUsrs:
     if '#' in msg.split(':')[1]: #let's make sure people use this privately so that people won't see the part message until they leave a channel
       chan = getChannel(msg)
-      print prompt + nick + " sent !setquitmsg in " + chan + ". Sending warning..."
-      sendChanMsg(chan, "Don't do that in the channel " + nick)
+      myprint("%s sent !setquitmsg in %s. Sending warning..." % (nick, chan))
+      sendChanMsg(chan, "Don't do that in the channel %s" % (nick))
       sendNickMsg(nick, "Send it as a notice or query(pvt)")
     else:
       newMsg = msg.split(":!setquitmsg")[1].lstrip(' ') # Retrieves the part message
@@ -670,23 +675,23 @@ def setPart(nick, newMsg, toSet):
   global parts
   changed = False
   for idx, content in enumerate(parts): # Here we start scanning the array
-    if nick + "|!|" in content.__str__(): # In this case the user already has a part message
+    if nick + "|!|" in str(content): # In this case the user already has a part message
       if toSet: # This will happen if there is a new part message and not an empty one
         parts[idx] = nick + "|!|" + newMsg # Changes the part message to the new one
-        print prompt + "Resetting " + nick + "'s part message to '" + newMsg + "' "
+        myprint("Resetting %s's part message to '%s'" % (nick, newMsg))
         sendNickMsg(nick, "Part message re-set!")
         changed = True
         break # We've found the nickname we can get out of the loop
       else: # This will happen if there is an empty entry message on an existing nick
         parts[idx] = None # Completely erases the content
         parts.remove(None)
-        print prompt + "Unsetting " + nick + "'s part message"
+        myprint("Unsetting %s's part message" % (nick))
         sendNickMsg(nick, "Part message unset!")
         changed = True
         break # We've found the nickname we can get out of the loop
   if toSet and not changed: # this will happen if there is a message and we didn't find a nickname in the file which means it's the 1st time being used or it was erased previously
         parts.append(nick + "|!|" + newMsg) # Adds the nick and corresponding part message
-        print prompt + "Setting " + nick + "'s part message to '" + newMsg + "' "
+        myprint("Setting %s's part message to '%s'" % (nick, newMsg))
         sendNickMsg(nick, "Part message set!")
   with open("part.txt", 'w') as f:
     for i in parts:
@@ -704,7 +709,7 @@ def sendPart(msg, isQuit):
     for elem in parts:
       if nick + "|!|" in elem:
         part = elem.split("|!|")[1]
-        print prompt + "Saying goodbye to " + nick + "..."
+        myprint("Saying goodbye to %s..." % (nick))
         break
     if part and isQuit: # Bot says goodbye when the user leaves the network
       sendChanMsg("#boxxy", part)
@@ -719,7 +724,7 @@ def startTag(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]: # Checks of command was sent in a channel
-      print prompt + nick + " sent !starttag outside of a channel" #debugging
+      myprint("%s sent !starttag outside of a channel" % (nick)) #debugging
       sendNickMsg(nick, "You are not in a channel") # Warned the nickname
     else:
       global isTagOn, tagged
@@ -727,7 +732,7 @@ def startTag(msg):
       if not isTagOn: # Checks if a game is in progress
         tagged = nick # Whoever starts the game is it
         isTagOn = True # Set game start
-        sendChanMsg(chan, "The game starts and " + nick + " is it!")
+        sendChanMsg(chan, "The game starts and %s is it!" % (nick))
       else: # Warns if game is on progress
         sendChanMsg(chan, "A game is already in progress.")
     
@@ -736,7 +741,7 @@ def endTag(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !endtag outside of a channel"
+      myprint("%s sent !endtag outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       global isTagOn, tagged
@@ -753,7 +758,7 @@ def tag(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !tag outside of a channel"
+      myprint("%s sent !tag outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -761,40 +766,40 @@ def tag(msg):
       if isTagOn:
         target = msg.split("!tag")[1].lstrip(' ')
         if not target: # Checks if the nick tagged nothing
-          sendChanMsg(chan , "Tag who??? Usage: !tag <nick>")
+          sendChanMsg(chan, "Tag who??? Usage: !tag <nick>")
         else:
           target = target.rstrip(' ') # Removes trailing spaces left by some clients auto-complete
           if target in list(taggers): # Target must exist in the list of players
             if nick == tagged: # Checks if the player is it
               if nick == target: # Checks if player is tagging himself
-                print prompt + nick + " tagged himself"
-                sendChanMsg(chan, "Don't tag yourself " + nick)
+                myprint("%s tagged himself" % (nick))
+                sendChanMsg(chan, "Don't tag yourself %s" % (nick))
               elif target == botnick: # Checks if the bot gets tagged
-                print prompt + nick + " tagged the bot!"
-                sendChanMsg(chan, nick + " tagged me!")
+                myprint("%s tagged the bot!" % (nick))
+                sendChanMsg(chan, "%s tagged me!" % (nick))
                 target = random.choice(list(taggers)) # Bot picks a random player to tag
-                print prompt + "Tagging " + target + "..."
+                myprint("Tagging %s..." % (target))
                 tagged = target
-                sendChanMsg(chan, target + " Tag! You're it!")
+                sendChanMsg(chan, "%s Tag! You're it!" % (target))
                 prevTagged = nick
               else: # Player tags someone other than himself or the bot
-                print prompt + tagged + " tagged " + target
+                myprint("%s tagged %s" % (tagged, target))
                 tagged = target
                 prevTagged = nick
-                sendChanMsg(chan, nick + " tagged you " + target + " you're it!")
+                sendChanMsg(chan, "%s tagged you %s you're it!" % (nick, target))
             else:
-              sendChanMsg(chan, nick + " you are not it!")
+              sendChanMsg(chan, "%s you are not it!" % (nick))
           else:
-            sendChanMsg(chan, "Who are you tagging " + nick + "? Maybe " + target + " was not here when the game started.")
+            sendChanMsg(chan, "Who are you tagging %s? Maybe %s was not here when the game started." % (nick, target))
       else:
-        sendChanMsg(chan, nick + " we're not playing tag now...")
+        sendChanMsg(chan, "%s we're not playing tag now..." % (nick))
 
 def setTagged(msg):
   nick = getNick(msg)
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !settagged outside of a channel"
+      myprint("%s sent !settagged outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -802,32 +807,32 @@ def setTagged(msg):
       if isTagOn:
         target = msg.split("!settagged")[1].lstrip(' ')
         if not target: # Checks if the nick wrote anything to set
-          sendChanMsg(chan , "Set who??? Usage: !settagged <nick>")
+          sendChanMsg(chan, "Set who??? Usage: !settagged <nick>")
         else:
           target = target.rstrip(' ') # Removes trailing spaces left by some clients auto-complete
           if target in list(taggers): # Target must exist in the list of players
             if nick == prevTagged:
               if nick == target:
-                print prompt + nick + " set himself as tagged"
-                sendChanMsg(chan, "Don't tag yourself " + nick)
+                myprint("%s set himself as tagged" % (nick))
+                sendChanMsg(chan, "Don't tag yourself %s" % (nick))
               elif target == botnick:
-                print prompt + nick + " set the bot as tagged!"
-                sendChanMsg(chan, nick + " tagged me instead!")
+                myprint("%s set the bot as tagged!" % (nick))
+                sendChanMsg(chan, "%s tagged me instead!" % (nick))
                 target = random.choice(list(taggers)) # Bot picks a random player to tag
-                print prompt + "Tagging " + target + "..."
+                myprint("Tagging %s..." % (target))
                 tagged = target
-                sendChanMsg(chan, target + " Tag! You're it!")
+                sendChanMsg(chan, "%s Tag! You're it!" % (target))
               else:
-                print prompt + nick + " decided to tag " + target + " instead"
-                sendChanMsg(chan, nick + " decided to tag " + target + " instead")
+                myprint("%s decided to tag %s instead" % (nick, target))
+                sendChanMsg(chan, "%s decided to tag %s instead" % (nick, target))
                 tagged = target
-                sendChanMsg(chan, nick + " tagged you " + target + " you're it!")
+                sendChanMsg(chan, "%s tagged you %s you're it!" % (nick, target))
             else:
-              sendChanMsg(chan, nick + " you were not previously it.")
+              sendChanMsg(chan, "%s you were not previously it." % (nick))
           else:
-            sendChanMsg(chan, "Who are you tagging " + nick + "? Maybe " + target + " was not here when the game started.")
+            sendChanMsg(chan, "Who are you tagging %s? Maybe %s was not here when the game started." % (nick, target))
       else:
-        sendChanMsg(chan, nick + " we're not playing tag now...")
+        sendChanMsg(chan, "%s we're not playing tag now..." % (nick))
       
           #ROSE
           
@@ -836,27 +841,27 @@ def rose(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !rose outside of a channel"
+      myprint("%s sent !rose outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
       target = msg.split("!rose")[1].lstrip(' ')
       if not target: # Checks for a target to send a rose to
-        sendChanMsg(chan , nick + " don't keep the roses to yourself. Usage: !rose <nick>")
+        sendChanMsg(chan, "%s don't keep the roses to yourself. Usage: !rose <nick>" % (nick))
       else:
         target = target.rstrip(' ')
         if nick == target: # Checks if nick is sending a rose to himself
-          print prompt + nick + " is being selfish with the roses"
-          sendChanMsg(chan, "Don't be selfish " + nick + " give that rose someone else")
+          myprint("%s is being selfish with the roses" % (nick))
+          sendChanMsg(chan, "Don't be selfish %s give that rose someone else" % (nick))
         elif target == botnick:
-          print prompt + nick + " sent a rose to the bot."
-          sendChanMsg(chan, nick + " gave me a rose!")
-          sendChanMsg(chan, '[' + nick + ']' + ' ' + rosestr + ' ' + '[' + target + ']')
+          myprint("%s sent a rose to the bot." % (nick))
+          sendChanMsg(chan, "%s gave me a rose!" % (nick))
+          sendChanMsg(chan, "[%s] %s [%s]" % (nick, rosestr, target))
           sendChanMsg(chan, ":3 thanks 4<3")
         else: # Success (normal case)
-          print prompt + nick + " sent a rose to " + target
-          sendChanMsg(chan, nick + " gives a rose to " + target)
-          sendChanMsg(chan, '[' + nick + ']' + ' ' + rosestr + ' ' + '[' + target + ']')
+          myprint("%s sent a rose to %s" % (nick, target))
+          sendChanMsg(chan, "%s gives a rose to %s" % (nick, target))
+          sendChanMsg(chan, "[%s] %s [%s]" % (nick, rosestr, target))
 
 
           #CAKE
@@ -876,30 +881,30 @@ def cake(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !cake outside of a channel"
+      myprint("%s sent !cake outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
       target = msg.split("!cake")[1].lstrip(' ')
       if not target: # Checks for a target to promise some cake
-        sendChanMsg(chan , nick + ", there is science to do. Usage: !cake <nick>")
+        sendChanMsg(chan, "%s, there is science to do. Usage: !cake <nick>" % (nick))
       else:
         target = target.rstrip(' ')
         if nick == target: # Checks if nick is eating the cake by himself
-          print prompt + nick + " is tricking test subjects and eating the cake"
-          sendChanMsg(chan, "Those test subjects won't test for free' " + nick + ", leave some cake for them")
+          myprint("%s is tricking test subjects and eating the cake" % (nick))
+          sendChanMsg(chan, "Those test subjects won't test for free! %s, leave some cake for them" % (nick))
         elif target == botnick:
-          print prompt + nick + " gives some tasty cake to the bot."
+          myprint("%s gives some tasty cake to the bot." % (nick))
           printCake(chan)
-          sendChanMsg(chan, "Thank you " + nick + "!")
+          sendChanMsg(chan, "Thank you %s!" % (nick))
           sendChanMsg(chan, "It's so delicious and moist.")
         else: # Success (normal case)
-          print prompt + nick + " is sharing some cake"
+          myprint("%s is sharing some cake" % (nick))
           if random.randint(1,100) > 95:
-            sendChanMsg(chan, nick + " gives some tasty cake to " + target)
+            sendChanMsg(chan, "%s gives some tasty cake to %s" % (nick, target))
             printCake(chan)
           else:
-            sendChanMsg(chan, "unfortunately, " + target + " " + random.choice(cakeDeaths))
+            sendChanMsg(chan, "Unfortunately, %s %s" % (target, random.choice(cakeDeaths)))
         
           #BOOBS
           
@@ -908,26 +913,26 @@ def boobs(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !boobs outside of a channel"
+      myprint("%s sent !boobs outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
       target = msg.split("!boobs")[1].lstrip(' ')
       if not target: # Checks for a target to show boobs to
-        sendChanMsg(chan , nick + " don't hide those boobs. Usage: !boobs <nick>")
+        sendChanMsg(chan, "%s don't hide those boobs. Usage: !boobs <nick>" % (nick))
       else:
         target = target.rstrip(' ')
         if nick == target: # Checks if nick is sending !boobs to itself
-          print prompt + nick + " is being shy with those boobs"
-          sendChanMsg(chan, "Stop looking at the mirror " + nick + " show us them boobs")
+          myprint("%s is being shy with those boobs" % (nick))
+          sendChanMsg(chan, "Stop looking at the mirror %s show us them boobs" % (nick))
         elif target == botnick:
-          print prompt + nick + " sent !boobs to the bot."
-          sendChanMsg(chan, nick + " those are cute")
+          myprint("%s sent !boobs to the bot." % (nick))
+          sendChanMsg(chan, "%s those are cute" % (nick))
           sendChanMsg(chan, "But mine are bigger --> ( . Y . )")
         else: # Success (normal case)
-          print prompt + nick + " sent !boobs to " + target
-          sendChanMsg(chan, nick + " shows " + target + " some boobs")
-          sendChanMsg(chan, '[' + nick + ']' + ' ' + boobsstr + ' ' + '[' + target + ']')
+          myprint("%s sent !boobs to %s" % (nick, target))
+          sendChanMsg(chan, "%s shows %s some boobs" % (nick, target))
+          sendChanMsg(chan, "[%s] %s [%s]" % (nick, boobsstr, target))
         
           #SAY
           
@@ -937,13 +942,13 @@ def sayCmd(msg):
   if nick not in ignUsrs:
     if '#' in msg.split(':')[1]:
       chan = getChannel(msg)
-      print prompt + nick + " sent !say in " + chan + ". Sending warning..."
-      sendChanMsg(chan, "Don't do that in the channel " + nick)
+      myprint("%s sent !say in %s. Sending warning..." % (nick, chan))
+      sendChanMsg(chan, "Don't do that in the channel %s" % (nick))
       sendNickMsg(nick, "Send it as a notice or query(pvt)")
     else: # ":b0nk!~LoC@fake.dimension PRIVMSG testbot :!say #boxxy lol message"
       target = msg.split(':')[2].split(' ')[1]
       message = msg.split(target)[1].lstrip(' ')
-      ircsock.send("PRIVMSG " + target + " :" + message + '\n')
+      ircsock.send("PRIVMSG %s :%s\n" % (target, message))
     
           #8BALL
           
@@ -952,22 +957,22 @@ def eightBallCmd(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !8ball outside of a channel"
+      myprint("%s sent !8ball outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
       question = msg.split(':!8ball')[1].lstrip(' ')
       if not question or '?' not in question:
-        print prompt + nick + " didn't ask a question"
-        sendChanMsg(chan, "How about you ask me a question properly " + nick + "? Usage: !8ball [<question>]?")
+        myprint("%s didn't ask a question" % (nick))
+        sendChanMsg(chan, "How about you ask me a question properly %s? Usage: !8ball [<question>]?" % (nick))
       else:
         global eightball
         answer = random.choice(eightball)
         if answer:
-          print prompt + "8ball says: " + answer
-          sendChanMsg(chan, nick + " asked [" + question + "] the 8ball says: " + answer)
+          myprint("8ball says: %s" % (answer))
+          sendChanMsg(chan, "%s asked [%s] the 8ball says: %s" % (nick, question, answer))
         else:
-          print prompt + "No 8ball answers"
+          myprint("No 8ball answers")
           sendChanMsg(chan, "No 8ball answers :(")
         
           #LAST.FM
@@ -996,23 +1001,23 @@ def setLfmUser(nick, lfm_username, toSet):
   global lfmUsers
   changed = False # hit detection
   for idx, content in enumerate(lfmUsers): # scans array
-    if nick + "|!|" in content.__str__(): # finds the nickname
+    if nick + "|!|" in str(content): # finds the nickname
       if toSet:
-        lfmUsers[idx] = nick + "|!|" + lfm_username
-        print prompt + nick + " re-set it's LAST.FM username to " + lfm_username
+        lfmUsers[idx] = "%s|!|%s" % (nick, lfm_username)
+        myprint("%s re-set it's LAST.FM username to %s" % (nick, lfm_username))
         sendNickMsg(nick, "last.fm username re-set!")
         changed = True
         break # get out of loop
       else:
         lfmUsers[idx] = None
         lfmUsers.remove(None)
-        print prompt + nick + " unset it's LAST.FM username"
+        myprint("%s unset it's LAST.FM username" % (nick))
         sendNickMsg(nick, "last.fm username unset!")
         changed = True
         break
   if toSet and not changed:
-        lfmUsers.append(nick + "|!|" + lfm_username)
-        print prompt + nick + " set it's LAST.FM username to " + lfm_username
+        lfmUsers.append("%s|!|%s" % (nick, lfm_username))
+        myprint("%s set it's LAST.FM username to %s" % (nick, lfm_username))
         sendNickMsg(nick, "last.fm username set!")
   with open("lfmusers.txt", 'w') as f:
     for i in lfmUsers:
@@ -1025,20 +1030,20 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent .compare outside of a channel"
+      myprint("%s sent .compare outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
       args = msg.split(':')[2].rstrip(' ').split(' ') # puts usernames in array
-      if args.__len__() == 3: # correct usage
-        user_name1 = args[1] # assigning usernames to vars
-        user_name2 = args[2]
+      if len(args) == 3: # correct usage
+        user1 = args[1] # assigning usernames to vars
+        user2 = args[2]
         global lastfm
         try:
-          compare = lastfm.get_user(user_name1).compare_with_user(user_name2, 5) # comparison information from pylast
+          compare = lastfm.get_user(user1).compare_with_user(user2, 5) # comparison information from pylast
         except pylast.WSError as e: # One or both users do not exist
-          print prompt + e.details
-          sendChanMsg(chan, lfm_logo + "Error: " + e.details.__str__())
+          myprint(e.details)
+          sendChanMsg(chan, "%sError: %s" % (lfm_logo, e.details))
           return None
         global cmp_bars
         index = round(float(compare[0]), 4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
@@ -1049,17 +1054,17 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
         raw_artists = []
         raw_artists = compare[1] # compare[1] contains and array of pylast.artist objects
         artist_list = ''
-        if raw_artists.__len__() > 0: # users have artists in common
+        if len(raw_artists) > 0: # users have artists in common
           while raw_artists:
             artist_list += raw_artists.pop().get_name().encode('utf8') + ", " # artist list string is built
           artist_list = artist_list.rstrip(", ")
         else: # no artists in common so we return '(None)'
           artist_list = "(None)"
-        sendChanMsg(chan, lfm_logo + "Comparison: " + user_name1 + ' ' + bar + ' ' + user_name2 + " - Similarity: " + index.__str__() + "% - Common artists: " + artist_list)
-        print prompt + "Comparison between " + user_name1 + " and " + user_name2 + ' | ' + index.__str__() + "% | " + artist_list
+        myprint("Comparison between %s and %s | %s% | %s" % (user1, user2, str(index), artist_list))
+        sendChanMsg(chan, "%sComparison: %s %s %s - Similarity: %s% - Common artists: %s" % (lfm_logo, user1, bar, user2, str(index), artist_list))
       else:
-        print prompt + nick + " sent bad arguments for .compare"
-        sendChanMsg(chan, lfm_logo + "Bad arguments! Usage: .compare <username1> [username2]") # warning for bad usage
+        myprint("%s sent bad arguments for .compare" % (nick))
+        sendChanMsg(chan, "%sBad arguments! Usage: .compare <username1> [username2]" % (lfm_logo)) # warning for bad usage
 
 
 def nowPlaying(msg): # use of the last.fm interface (pylast) in here
@@ -1067,7 +1072,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent .np outside of a channel"
+      myprint("%s sent .np outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -1075,8 +1080,8 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
       if not target: # let's check the file
         target = getLfmUser(nick)
       if not target: # he is not in the db
-        sendChanMsg(chan , lfm_logo + "First set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>")
-        print prompt + nick + " sent .np but is not registered"
+        sendChanMsg(chan , "%sFirst set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>" % (lfm_logo))
+        myprint("%s sent .np but is not registered" % (nick))
       else:
         global lastfm
         lfm_user = lastfm.get_user(target) # returns pylast.User object
@@ -1084,16 +1089,16 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
           lfm_user.get_id()
         except pylast.WSError as e: # catched the exception, user truly does not exist
           print e.details
-          sendChanMsg(chan, lfm_logo + "Error: " + e.details.__str__())
+          sendChanMsg(chan, "%sError: %s" % (lfm_logo, e.details))
           return None # GTFO
         if lfm_user.get_playcount() < 1: # checks if user has scrobbled anything EVER
-          sendChanMsg(chan, lfm_logo + target + " has an empty library")
-          print prompt + target + " has an empty library" # no need to get a nowplaying when the library is empty
+          myprint("%s has an empty library" % (target)) # no need to get a nowplaying when the library is empty
+          sendChanMsg(chan, "%s%s has an empty library" % (lfm_logo, target))
         else:
           np = lfm_user.get_now_playing() # np is now a pylast.Track object
           if np is None: # user does not have a now listening track
-            sendChanMsg(chan, lfm_logo + target + " does not seem to be playing any music right now...")
-            print prompt + target + " does not seem to be playing any music right now..."
+            myprint("%s does not seem to be playing any music right now..." % (target))
+            sendChanMsg(chan, "%s%s does not seem to be playing any music right now..." % (lfm_logo, target))
           else: # all went well
             artist_name = np.artist.get_name().encode('utf8')# string containing artist name
             track = np.title.encode('utf8') #string containing track title
@@ -1107,7 +1112,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
             loved = ''
             
             if np.userloved == '1': # checks if np is a loved track to show when brodcasted to channel
-              loved = " 4<3"
+              loved = "4<3 "
             
             raw_tags = np.get_top_tags(5)
             if not raw_tags: # some tracks have no tags so we request the artist tags
@@ -1117,9 +1122,9 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
               tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
             tags = tags.rstrip(", ") # removes last comma
             
-            sendChanMsg(chan, lfm_logo + target + " is now playing: " + artist_name + " - " + track + "" + loved + " (" + playCount.__str__() + " plays" + tags + ")")# broadcast to channel
-            print prompt + target + " is now playing: " + artist_name + " - " + track + loved + " (" + playCount.__str__() + " plays" + tags + ")"
-              #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
+            myprint("%s is now playing: %s - %s %s(%s plays%s)" % (target, artist_name, track, loved, str(playCount), tags))
+            sendChanMsg(chan, "%s%s is now playing: %s - %s %s(%s plays%s)" % (lfm_logo, target, artist_name, track, loved, str(playCount), tags))# broadcast to channel
+            #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
 
           #TWITTER
@@ -1129,7 +1134,7 @@ def getTweet(msg):
   global ignUsrs
   if nick not in ignUsrs:
     if '#' not in msg.split(':')[1]:
-      print prompt + nick + " sent !twitter outside of a channel"
+      myprint("%s sent !twitter outside of a channel" % (nick))
       sendNickMsg(nick, "You are not in a channel")
     else:
       chan = getChannel(msg)
@@ -1149,22 +1154,22 @@ def getTweet(msg):
           tweets = t_api.GetUserTimeline(None, t_user)
           tweet = tweets[index].GetText().encode('utf8').replace('\n', ' ')
           t_user = t_api.GetUser(None, t_user)._screen_name.encode('utf8')
-          sendChanMsg(chan, t_logo + '@' + t_user + ': ' + tweet)
-          print prompt + t_user + ' ' + index.__str__() + ' ' + tweet
+          myprint("%s %s %s" % (t_user, str(index), tweet))
+          sendChanMsg(chan, "%s@%s: %s" % (t_logo, t_user, tweet))
         except twitter.TwitterError as e:
           err_msg = e.message[0].get('message').encode('utf8')
-          err_code = e.message[0].get('code').__str__()
-          print err_msg + ' Code:' + err_code
-          sendChanMsg(chan, t_logo + "Error: " + err_msg + ' Code:' + err_code)
+          err_code = str(e.message[0].get('code'))
+          myprint("Code: %s - %s" % (err_code, err_msg))
+          sendChanMsg(chan, "%sCode: %s - %s" % (t_logo, err_code, err_msg))
           return None # GTFO
       else:
-        print prompt + nick + " used bad arguments for !twitter"
-        sendChanMsg(chan, t_logo + "Bad arguments! Usage: !twitter <twitteruser> [optional number]")
+        myprint("%s used bad arguments for !twitter" % (nick))
+        sendChanMsg(chan, "%s Bad arguments! Usage: !twitter <twitteruser> [optional number]" % (t_logo))
 
           #QUIT
 
 def quitIRC(): #This kills the bot!
-  print prompt + "Killing the bot..."
+  myprint("Killing the bot...")
   ircsock.send("QUIT " + quitmsg + '\n')
 
       #HELP (THE WALL OF TEXT) keep this on the bottom
@@ -1173,18 +1178,18 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
   nick = getNick(ircmsg)
   global ignUsrs, authUsrs
   if nick not in ignUsrs:
-    print prompt + "Help requested by " + nick
+    myprint("%sHelp requested by " % (nick))
     sendNickMsg(nick, "You have requested help.")
     time.sleep(0.5) # 0.5 seconds to avoid flooding
-    sendNickMsg(nick, "You can say \'Hello " + botnick + "\' in a channel and I will respond.")
+    sendNickMsg(nick, "You can say 'Hello %s' in a channel and I will respond." % (botnick))
     time.sleep(0.5)
     sendNickMsg(nick, "You can also invite me to a channel and I'll thank you for inviting me there.")
     time.sleep(0.5)
     sendNickMsg(nick, "General commands: !help !invite !rtd !quote !addquote !setjoinmsg !setquitmsg !starttag !endtag !tag !rose !boobs !8ball !pass !cake")
     time.sleep(0.5)
-    sendNickMsg(nick, lfm_logo + "commands: .setuser .np .compare")
+    sendNickMsg(nick, "%scommands: .setuser .np .compare" % (lfm_logo))
     time.sleep(0.5)
-    sendNickMsg(nick, t_logo + "commands: !twitter")
+    sendNickMsg(nick, "%scommands: !twitter" % (t_logo))
     time.sleep(0.5)
     #sendNickMsg(nick, g_logo + " commands: !google")
     #time.sleep(0.5)
@@ -1212,7 +1217,7 @@ try:
   ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
   ircsock.settimeout(250.0)
   ircsock.connect((server, ssl_port)) # Here we connect to the server using the port defined above
-  ircsock.send("USER " + botuser + ' ' + bothost + ' ' + botserver + ' ' + botname + '\n') # Bot authentication
+  ircsock.send("USER %s %s %s %s\n" % (botuser, bothost, botserver, botname)) # Bot authentication
   time.sleep(3)
   identify() # Bot identification
   time.sleep(3)
@@ -1238,7 +1243,7 @@ try:
         ircmsg = ircmsg.rstrip(' ') # Removes an annoying SPACE char left by the server at the end of the string
         ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
         nicks = ircmsg.split(' ') # Puts nicks in an array
-        print prompt + nicks.__str__() # debugging
+        myprint(str(nicks)) # debugging
         if botnick not in list(nicks):
           ircsock.send("NAMES " + chan + '\n')
         
@@ -1256,7 +1261,7 @@ try:
           else:
             sendChanMsg(chan, "The game is already in progress!")
       except IndexError:
-        print prompt + "Something went wrong..."
+        myprint("Something went wrong...")
     
     if " INVITE " + botnick + " :" in ircmsg:
       tmpstr = ircmsg
@@ -1264,9 +1269,9 @@ try:
       nick = getNick(tmpstr)
       if nick not in ignUsrs:
         target = tmpstr.split(':')[2]
-        print prompt + nick + " invited the bot to " + target + ". Joining..."
+        myprint("%s invited the bot to %s. Joining..." % (nick, target))
         joinChan(target)
-        sendChanMsg(target, "Thank you for inviting me here " + nick + '!')
+        sendChanMsg(target, "Thank you for inviting me here %s!" % (nick))
         tmpstr = ''
     
     if ":hello " + botnick in ircmsg.lower() or ":hi " + botnick in ircmsg.lower(): # If we can find "Hello/Hi testbot" it will call the function hello(nick)
@@ -1287,7 +1292,7 @@ try:
         break
       else:
         nick = getNick(ircmsg)
-        print prompt + nick + " tried to kill the bot. Sending warning..."
+        myprint("%s tried to kill the bot. Sending warning..." % (nick))
         sendNickMsg(nick, "I'm afraid I can't let you do that " + nick + "...")
       
     if ":!invite" in ircmsg:
@@ -1325,7 +1330,7 @@ try:
         else:
           chan = getChannel(ircmsg)
           ircsock.send("NAMES " + chan + '\n')
-          print prompt + "Getting NAMES from " + chan
+          myprint("Getting NAMES from %s" % (chan))
           lastCommand = "!randkick"
       
     if ":!topic" in ircmsg:
@@ -1369,7 +1374,7 @@ try:
         else:
           chan = getChannel(ircmsg)
           ircsock.send("NAMES " + chan + '\n')
-          print prompt + "Getting NAMES from " + chan
+          myprint("Getting NAMES from %s" % (chan))
           lastCommand = "!starttag"
           tmpstr = ircmsg
     
@@ -1416,4 +1421,4 @@ try:
     
 except socket.error as e:
   print e.strerror
-  print prompt + "Bot killed / timedout"
+  myprint("Bot killed / timedout")
