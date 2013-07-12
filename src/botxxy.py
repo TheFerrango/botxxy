@@ -77,7 +77,7 @@ prompt = ">> "
 
 # Last.fm vars
 
-lfm_logo = "0,5last.fm "
+lfm_logo = "0,5last.fm"
 cmp_bars = ["[4====            ]",
             "[4====7====        ]",
             "[4====7====8====    ]",
@@ -87,11 +87,11 @@ lastfm = None
 
 # Google vars
 
-g_logo = "12G4o8o12g9l4e "
+g_logo = "12G4o8o12g9l4e"
 g_baseURL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="
 
 # Twitter vars
-t_logo = "0,10twitter "
+t_logo = "0,10twitter"
 t_api = None
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
@@ -1043,7 +1043,7 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
           compare = lastfm.get_user(user1).compare_with_user(user2, 5) # comparison information from pylast
         except pylast.WSError as e: # One or both users do not exist
           myprint(e.details)
-          sendChanMsg(chan, "%sError: %s" % (lfm_logo, e.details))
+          sendChanMsg(chan, "%s Error: %s" % (lfm_logo, e.details))
           return None
         global cmp_bars
         index = round(float(compare[0]), 4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
@@ -1061,10 +1061,10 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
         else: # no artists in common so we return '(None)'
           artist_list = "(None)"
         myprint("Comparison between %s and %s %s%% %s" % (user1, user2, str(index), artist_list))
-        sendChanMsg(chan, "%sComparison: %s %s %s - Similarity: %s%% - Common artists: %s" % (lfm_logo, user1, bar, user2, str(index), artist_list))
+        sendChanMsg(chan, "%s Comparison: %s %s %s - Similarity: %s%% - Common artists: %s" % (lfm_logo, user1, bar, user2, str(index), artist_list))
       else:
         myprint("%s sent bad arguments for .compare" % (nick))
-        sendChanMsg(chan, "%sBad arguments! Usage: .compare <username1> [username2]" % (lfm_logo)) # warning for bad usage
+        sendChanMsg(chan, "%s Bad arguments! Usage: .compare <username1> [username2]" % (lfm_logo)) # warning for bad usage
 
 
 def nowPlaying(msg): # use of the last.fm interface (pylast) in here
@@ -1080,7 +1080,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
       if not target: # let's check the file
         target = getLfmUser(nick)
       if not target: # he is not in the db
-        sendChanMsg(chan , "%sFirst set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>" % (lfm_logo))
+        sendChanMsg(chan , "%s First set your username with .setuser <last.fm username>. Alternatively use .np <last.fm username>" % (lfm_logo))
         myprint("%s sent .np but is not registered" % (nick))
       else:
         global lastfm
@@ -1089,16 +1089,16 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
           lfm_user.get_id()
         except pylast.WSError as e: # catched the exception, user truly does not exist
           print e.details
-          sendChanMsg(chan, "%sError: %s" % (lfm_logo, e.details))
+          sendChanMsg(chan, "%s Error: %s" % (lfm_logo, e.details))
           return None # GTFO
         if lfm_user.get_playcount() < 1: # checks if user has scrobbled anything EVER
           myprint("%s has an empty library" % (target)) # no need to get a nowplaying when the library is empty
-          sendChanMsg(chan, "%s%s has an empty library" % (lfm_logo, target))
+          sendChanMsg(chan, "%s %s has an empty library" % (lfm_logo, target))
         else:
           np = lfm_user.get_now_playing() # np is now a pylast.Track object
           if np is None: # user does not have a now listening track
             myprint("%s does not seem to be playing any music right now..." % (target))
-            sendChanMsg(chan, "%s%s does not seem to be playing any music right now..." % (lfm_logo, target))
+            sendChanMsg(chan, "%s %s does not seem to be playing any music right now..." % (lfm_logo, target))
           else: # all went well
             artist_name = np.artist.get_name().encode('utf8')# string containing artist name
             track = np.title.encode('utf8') #string containing track title
@@ -1123,7 +1123,7 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
             tags = tags.rstrip(", ") # removes last comma
             
             myprint("%s is now playing: %s - %s %s(%s plays%s)" % (target, artist_name, track, loved, str(playCount), tags))
-            sendChanMsg(chan, "%s%s is now playing: %s - %s %s(%s plays%s)" % (lfm_logo, target, artist_name, track, loved, str(playCount), tags))# broadcast to channel
+            sendChanMsg(chan, "%s %s is now playing: %s - %s %s(%s plays%s)" % (lfm_logo, target, artist_name, track, loved, str(playCount), tags))# broadcast to channel
             #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
 
@@ -1152,15 +1152,17 @@ def getTweet(msg):
         global t_api
         try:
           tweets = t_api.GetUserTimeline(None, t_user)
-          tweet = tweets[index].GetText().encode('utf8').replace('\n', ' ')
-          t_user = t_api.GetUser(None, t_user)._screen_name.encode('utf8')
-          myprint("%s %s %s" % (t_user, str(index), tweet))
-          sendChanMsg(chan, "%s@%s: %s" % (t_logo, t_user, tweet))
+          if not tweets:
+            myprint("%s: has no tweets" % t_user)
+            sendChanMsg(chan, "%s User: %s has no tweets" % (t_logo, t_user))
+          else:
+            tweet = tweets[index].GetText().encode('utf8').replace('\n', ' ')
+            t_user = t_api.GetUser(None, t_user)._screen_name.encode('utf8')
+            myprint("%s %s %s" % (t_user, str(index), tweet))
+            sendChanMsg(chan, "%s @%s: %s" % (t_logo, t_user, tweet))
         except twitter.TwitterError as e:
-          err_msg = e.message[0].get('message').encode('utf8')
-          err_code = str(e.message[0].get('code'))
-          myprint("Code: %s - %s" % (err_code, err_msg))
-          sendChanMsg(chan, "%sCode: %s - %s" % (t_logo, err_code, err_msg))
+          myprint("TwitterError: %s" % (e))
+          sendChanMsg(chan, "%s Error: %s" % (t_logo, e))
           return None # GTFO
       else:
         myprint("%s used bad arguments for !twitter" % (nick))
