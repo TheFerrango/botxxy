@@ -1041,27 +1041,27 @@ def compareLfmUsers(msg): # use of the last.fm interface (pylast) in here
         global lastfm
         try:
           compare = lastfm.get_user(user1).compare_with_user(user2, 5) # comparison information from pylast
-        except pylast.WSError as e: # One or both users do not exist
-          myprint(e.details)
+          global cmp_bars
+          index = round(float(compare[0]), 4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
+          if index < 1.0:
+            bar = cmp_bars[4]
+          else:
+            bar = cmp_bars[int(index / 25.0001)] # int(index / 25.0001) will return an integer from 0 to 3 to choose what bar to show
+          raw_artists = []
+          raw_artists = compare[1] # compare[1] contains and array of pylast.artist objects
+          artist_list = ''
+          if len(raw_artists) > 0: # users have artists in common
+            while raw_artists:
+              artist_list += raw_artists.pop().get_name().encode('utf8') + ", " # artist list string is built
+            artist_list = artist_list.rstrip(", ")
+          else: # no artists in common so we return '(None)'
+            artist_list = "(None)"
+            myprint("Comparison between %s and %s %s%% %s" % (user1, user2, str(index), artist_list))
+            sendChanMsg(chan, "%s Comparison: %s %s %s - Similarity: %s%% - Common artists: %s" % (lfm_logo, user1, bar, user2, str(index), artist_list))
+        except pylast.WSError as e: # catched the exception, user truly does not exist
+          print e.details
           sendChanMsg(chan, "%s Error: %s" % (lfm_logo, e.details))
-          return None
-        global cmp_bars
-        index = round(float(compare[0]), 4)*100 # compare[0] contains a str with a num from 0-1 here we round it to 4 digits and turn it to a percentage 0-100
-        if index < 1.0:
-          bar = cmp_bars[4]
-        else:
-          bar = cmp_bars[int(index / 25.0001)] # int(index / 25.0001) will return an integer from 0 to 3 to choose what bar to show
-        raw_artists = []
-        raw_artists = compare[1] # compare[1] contains and array of pylast.artist objects
-        artist_list = ''
-        if len(raw_artists) > 0: # users have artists in common
-          while raw_artists:
-            artist_list += raw_artists.pop().get_name().encode('utf8') + ", " # artist list string is built
-          artist_list = artist_list.rstrip(", ")
-        else: # no artists in common so we return '(None)'
-          artist_list = "(None)"
-        myprint("Comparison between %s and %s %s%% %s" % (user1, user2, str(index), artist_list))
-        sendChanMsg(chan, "%s Comparison: %s %s %s - Similarity: %s%% - Common artists: %s" % (lfm_logo, user1, bar, user2, str(index), artist_list))
+          return None # GTFO
       else:
         myprint("%s sent bad arguments for .compare" % (nick))
         sendChanMsg(chan, "%s Bad arguments! Usage: .compare <username1> [username2]" % (lfm_logo)) # warning for bad usage
@@ -1084,47 +1084,46 @@ def nowPlaying(msg): # use of the last.fm interface (pylast) in here
         myprint("%s sent .np but is not registered" % (nick))
       else:
         global lastfm
-        lfm_user = lastfm.get_user(target) # returns pylast.User object
-        try: # some random fuction to raise exception if the user does not exist
-          lfm_user.get_id()
+        try:
+          lfm_user = lastfm.get_user(target) # returns pylast.User object
+          if lfm_user.get_playcount() < 1: # checks if user has scrobbled anything EVER
+            myprint("%s has an empty library" % (target)) # no need to get a nowplaying when the library is empty
+            sendChanMsg(chan, "%s %s has an empty library" % (lfm_logo, target))
+          else:
+            np = lfm_user.get_now_playing() # np is now a pylast.Track object
+            if np is None: # user does not have a now listening track
+              myprint("%s does not seem to be playing any music right now..." % (target))
+              sendChanMsg(chan, "%s %s does not seem to be playing any music right now..." % (lfm_logo, target))
+            else: # all went well
+              artist_name = np.artist.get_name().encode('utf8')# string containing artist name
+              track = np.title.encode('utf8') #string containing track title
+              
+              try: # here we check if the user has ever played the np track
+                playCount = int(np.get_add_info(target).userplaycount)
+              except (ValueError, TypeError): #this error means track was never played so we just say it's 1
+                playCount = 1
+              
+              np = np.get_add_info(target)
+              loved = ''
+              
+              if np.userloved == '1': # checks if np is a loved track to show when brodcasted to channel
+                loved = "4<3 "
+              
+              raw_tags = np.get_top_tags(5)
+              if not raw_tags: # some tracks have no tags so we request the artist tags
+                raw_tags = np.artist.get_top_tags(5)
+              tags = ', '
+              while raw_tags:
+                tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
+              tags = tags.rstrip(", ") # removes last comma
+              
+              myprint("%s is now playing: %s - %s %s(%s plays%s)" % (target, artist_name, track, loved, str(playCount), tags))
+              sendChanMsg(chan, "%s %s is now playing: %s - %s %s(%s plays%s)" % (lfm_logo, target, artist_name, track, loved, str(playCount), tags))# broadcast to channel
+              #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
         except pylast.WSError as e: # catched the exception, user truly does not exist
           print e.details
           sendChanMsg(chan, "%s Error: %s" % (lfm_logo, e.details))
           return None # GTFO
-        if lfm_user.get_playcount() < 1: # checks if user has scrobbled anything EVER
-          myprint("%s has an empty library" % (target)) # no need to get a nowplaying when the library is empty
-          sendChanMsg(chan, "%s %s has an empty library" % (lfm_logo, target))
-        else:
-          np = lfm_user.get_now_playing() # np is now a pylast.Track object
-          if np is None: # user does not have a now listening track
-            myprint("%s does not seem to be playing any music right now..." % (target))
-            sendChanMsg(chan, "%s %s does not seem to be playing any music right now..." % (lfm_logo, target))
-          else: # all went well
-            artist_name = np.artist.get_name().encode('utf8')# string containing artist name
-            track = np.title.encode('utf8') #string containing track title
-            
-            try: # here we check if the user has ever played the np track
-              playCount = int(np.get_add_info(target).userplaycount)
-            except (ValueError, TypeError): #this error means track was never played so we just say it's 1
-              playCount = 1
-            
-            np = np.get_add_info(target)
-            loved = ''
-            
-            if np.userloved == '1': # checks if np is a loved track to show when brodcasted to channel
-              loved = "4<3 "
-            
-            raw_tags = np.get_top_tags(5)
-            if not raw_tags: # some tracks have no tags so we request the artist tags
-              raw_tags = np.artist.get_top_tags(5)
-            tags = ', '
-            while raw_tags:
-              tags += raw_tags.pop().item.name.encode('utf8') + ", " # builds tags string
-            tags = tags.rstrip(", ") # removes last comma
-            
-            myprint("%s is now playing: %s - %s %s(%s plays%s)" % (target, artist_name, track, loved, str(playCount), tags))
-            sendChanMsg(chan, "%s %s is now playing: %s - %s %s(%s plays%s)" % (lfm_logo, target, artist_name, track, loved, str(playCount), tags))# broadcast to channel
-            #last.fm | b0nk is now playing: Joan Jett and the Blackhearts - You Want In, I Want Out (1 plays, rock, rock n roll, Joan Jett, 80s, pop)
     
 
           #TWITTER
