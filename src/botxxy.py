@@ -1164,6 +1164,9 @@ def getTweet(msg):
           myprint("TwitterError: %s" % (e))
           sendChanMsg(chan, "%s Error: %s" % (t_logo, e))
           return None # GTFO
+        except IndexError:
+          myprint("Index Error")
+          sendChanMsg(chan, "%s Error: User has no more tweets beyond this point" % (t_logo))
       else:
         myprint("%s used bad arguments for !twitter" % (nick))
         sendChanMsg(chan, "%s Bad arguments! Usage: !twitter <twitteruser> [optional number]" % (t_logo))
@@ -1180,7 +1183,7 @@ def helpcmd(msg): #Here is the help message to be sent as a private message to t
   nick = getNick(ircmsg)
   global ignUsrs, authUsrs
   if nick not in ignUsrs:
-    myprint("%sHelp requested by " % (nick))
+    myprint("Help requested by %s" % (nick))
     sendNickMsg(nick, "You have requested help.")
     time.sleep(0.5) # 0.5 seconds to avoid flooding
     sendNickMsg(nick, "You can say 'Hello %s' in a channel and I will respond." % (botnick))
@@ -1243,10 +1246,9 @@ try:
         ircmsg = ircmsg.split(':')[2] # Returns raw list of nicks
         ircmsg = ircmsg.translate(None, '~@+&%') # Removes user mode characters
         ircmsg = ircmsg.rstrip(' ') # Removes an annoying SPACE char left by the server at the end of the string
-        ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
         nicks = ircmsg.split(' ') # Puts nicks in an array
         myprint(str(nicks)) # debugging
-        if botnick not in list(nicks):
+        if '353' in list(nicks):
           ircsock.send("NAMES " + chan + '\n')
         
         # Now that we have the nicks we can decide what to do with them depending on the command
