@@ -5,19 +5,22 @@
 # Import the necessary libraries.
 import socket
 import ssl
+import time
+import io
 
 # Some basic variables used to configure the bot
 
-server = "boxxybabee.catiechat.net" # EU server
+#server = "boxxybabee.catiechat.net" # EU server
 #server = "anewhopeee.catiechat.net" # US server
+server = "192.168.1.35"
 port = 6667 # default port
 ssl_port = 6697 # ssl port
-chans = ["#test", "#your_channels_here"] #default channels
-botnick = "skeleton" # bot nick
-botuser = "botuser"
-bothost = "bothost"
-botserver = "botserver"
-botname = "botname"
+chans = ["#test", ] #default channels
+botnick = "GLaBOT" # bot nick
+botuser = "GLaBOTz"
+bothost = "APZervers"
+botserver = "apzerver"
+botname = "glabot"
 botpassword = ""
 
 # Global vars
@@ -66,24 +69,45 @@ def hello(msg): # This function responds to a user that inputs "Hello testbot"
 	myprint("%s said hi in %s" % (nick, chan))
 	sendChanMsg(chan, "Hello %s! Type !help for more information." % (nick))
 
+
+
+#=========================REMOTE CONTROL============================
+
+def sayTemp(msg):
+        chan = getChannel(msg)
+        f = open('/sys/class/thermal/thermal_zone0/temp', 'r')
+        temp = float(f.readline())
+        f.close()
+        sendChanMsg(chan, 'Current CPU temperature is %d degrees Kelvin' % ((temp/1000)+273.15 ))
+
+#===================================================================
+
 # Connection
 
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
-ircsock.connect((server, ssl_port)) # Here we connect to the server using the port defined above
+#ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
+ircsock.connect((server, port)) # Here we connect to the server using the port defined above
 ircsock.send("USER %s %s %s %s\n" % (botuser, bothost, botserver, botname)) # Bot authentication
 ircsock.send("NICK %s\n" % (botnick) ) # Here we actually assign the nick to the bot
+
+time.sleep(5)
 joinChans(chans)
 
 while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
 	ircmsg = ircsock.recv(4096) # Receive data from the server
 	ircmsg = ircmsg.strip('\n\r') # Removing any unnecessary linebreaks
 	myprint (ircmsg) # Here we print what's coming from the server
-	
+
 	if "PING :" in ircmsg: # If the server pings us then we've got to respond!
 		reply = ircmsg.split("PING :")[1] # In some IRCds it is mandatory to reply to PING the same message we recieve
 		ping(reply)
+                ircsock.send("USER %s %s %s %s\n" % (botuser, bothost, botserver, botname)) # Bot authentication
+                ircsock.send("NICK %s\n" % (botnick) ) # Here we actually assign the nick to the bot
+                joinChans(chans)
+
 	
 	if ":hello " + botnick in ircmsg.lower(): # If we can find "Hello botnick" it will call the function hello()
 		hello(ircmsg)
 	
+        if ":!saytemp" in ircmsg:
+                sayTemp(ircmsg)
