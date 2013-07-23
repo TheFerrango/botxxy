@@ -38,14 +38,14 @@ server = "boxxybabee.catiechat.net" # EU server
 #server = "anewhopeee.catiechat.net" # US server
 port = 6667 # default port
 ssl_port = 6697 # ssl port
-chans = ["#test", "#music", "#boxxy", "#IdleRPG"] #default channels
-botnick = "testbot" # bot nick
-botuser = "I"
-bothost = "m.botxxy.you.see"
-botserver = "testserver"
-botname = "testname"
-botpassword = "bawksy"
-quitmsg = "Exited_normally!"
+chans = ["#test", ] #default channels
+botnick = "GlaBOT" # bot nick
+botuser = "GlaBOT"
+bothost = "APzervers"
+botserver = "apzerver"
+botname = "glabot"
+botpassword = "tastycake"
+quitmsg = "It's been fun!"
 
 # Global vars
 
