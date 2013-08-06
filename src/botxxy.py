@@ -70,6 +70,31 @@ cakestr_2 = " __{*~*~*~*}__ "
 cakestr_3 = "`-------------`"
 prompt = ">> "
 
+#==============USELESS FUNCTION TO SHOW LOGO LOCALLY=================
+
+def printAptLogo():
+    print "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    print "               .,-:;//;:=,"
+    print "           . :H@@@MM@M#H/.,+%;,"
+    print "        ,/X+ +M@@M@MM%=,-%HMMM@X/,"
+    print "      -+@MM; $M@@MH+-,;XMMMM@MMMM@+-"
+    print "     ;@M@@M- XM@X;. -+XXXXXHHH@M@M#@/.               Aperture Laboratories"
+    print "   ,%MM@@MH ,@%=            .---=-=:=,."
+    print "   =@#@@@MX .,              -%HX$$%%%+;"
+    print "  =-./@M@M$                  .;@MMMM@MM:             IRC Bot GLaBot"
+    print "  X@/ -$MM/                    .+MM@@@M$"
+    print " ,@M@H: :@:                    . =X#@@@@-"
+    print " ,@@@MMX, .                    /H- ;@M@M=            Status:             [OK]"
+    print " .H@@@@M@+,                    %MM+..%#$."
+    print "  /MMMM@MMH/.                  XM@MH; =;"
+    print "   /%+%$XHH@$=              , .H@@@@MX,"
+    print "    .=--------.           -%H.,@@@@@MX,"
+    print "    .%MM@@@HHHXX$$$%+= .:$MMX =M@@MM%."
+    print "      =XMMM@MM@MM#H;,-+HMM@M+ /MMMX="
+    print "        =%@M@M#@$-.=$@MM@@@M; %M%="
+    print "          ,:+$+-,/H#MMMMMMM@= =,"
+    print "                =++%%%%+/:-."
+
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
 
@@ -419,6 +444,7 @@ try:
     identify() # Bot identification
     time.sleep(10)
     joinChans(chans)
+    printAptLogo()
     #  idleRPG()
 
     while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
