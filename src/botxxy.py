@@ -73,27 +73,26 @@ prompt = ">> "
 #==============USELESS FUNCTION TO SHOW LOGO LOCALLY=================
 
 def printAptLogo():
-    print "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    print "               .,-:;//;:=,"
-    print "           . :H@@@MM@M#H/.,+%;,"
-    print "        ,/X+ +M@@M@MM%=,-%HMMM@X/,"
-    print "      -+@MM; $M@@MH+-,;XMMMM@MMMM@+-"
-    print "     ;@M@@M- XM@X;. -+XXXXXHHH@M@M#@/.               Aperture Laboratories"
-    print "   ,%MM@@MH ,@%=            .---=-=:=,."
-    print "   =@#@@@MX .,              -%HX$$%%%+;"
-    print "  =-./@M@M$                  .;@MMMM@MM:             IRC Bot GLaBot"
-    print "  X@/ -$MM/                    .+MM@@@M$"
-    print " ,@M@H: :@:                    . =X#@@@@-"
-    print " ,@@@MMX, .                    /H- ;@M@M=            Status:             [OK]"
-    print " .H@@@@M@+,                    %MM+..%#$."
-    print "  /MMMM@MMH/.                  XM@MH; =;"
-    print "   /%+%$XHH@$=              , .H@@@@MX,"
-    print "    .=--------.           -%H.,@@@@@MX,"
-    print "    .%MM@@@HHHXX$$$%+= .:$MMX =M@@MM%."
-    print "      =XMMM@MM@MM#H;,-+HMM@M+ /MMMX="
-    print "        =%@M@M#@$-.=$@MM@@@M; %M%="
-    print "          ,:+$+-,/H#MMMMMMM@= =,"
-    print "                =++%%%%+/:-."
+    myprint("               .,-:;//;:=,")
+    myprint("           . :H@@@MM@M#H/.,+%;,")
+    myprint("        ,/X+ +M@@M@MM%=,-%HMMM@X/,")
+    myprint("      -+@MM; $M@@MH+-,;XMMMM@MMMM@+-")
+    myprint("     ;@M@@M- XM@X;. -+XXXXXHHH@M@M#@/.               Aperture Laboratories")
+    myprint("   ,%MM@@MH ,@%=            .---=-=:=,.")
+    myprint("   =@#@@@MX .,              -%HX$$%%%+;")
+    myprint("  =-./@M@M$                  .;@MMMM@MM:             IRC Bot GLaBot")
+    myprint("  X@/ -$MM/                    .+MM@@@M$")
+    myprint(" ,@M@H: :@:                    . =X#@@@@-")
+    myprint(" ,@@@MMX, .                    /H- ;@M@M=            Status:             [OK]")
+    myprint(" .H@@@@M@+,                    %MM+..%#$.")
+    myprint("  /MMMM@MMH/.                  XM@MH; =;")
+    myprint("   /%+%$XHH@$=              , .H@@@@MX,")
+    myprint("    .=--------.           -%H.,@@@@@MX,")
+    myprint("    .%MM@@@HHHXX$$$%+= .:$MMX =M@@MM%.")
+    myprint("      =XMMM@MM@MM#H;,-+HMM@M+ /MMMX=")
+    myprint("        =%@M@M#@$-.=$@MM@@@M; %M%=")
+    myprint("          ,:+$+-,/H#MMMMMMM@= =,")
+    myprint("                =++%%%%+/:-.")
 
 
 #============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
