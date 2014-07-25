@@ -12,7 +12,7 @@ import io
 
 #server = "boxxybabee.catiechat.net" # EU server
 #server = "anewhopeee.catiechat.net" # US server
-server = "192.168.1.35"
+server = "192.168.2.64"
 port = 6667 # default port
 ssl_port = 6697 # ssl port
 chans = ["#test", ] #default channels

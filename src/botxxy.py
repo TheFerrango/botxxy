@@ -34,15 +34,15 @@ import pylast
 
 # Some basic variables used to configure the bot
 
-server = "boxxybabee.catiechat.net" # EU server
+#server = "boxxybabee.catiechat.net" # EU server
 #server = "anewhopeee.catiechat.net" # US server
-#server = "192.168.1.35"
+server = "192.168.2.64"
 port = 6667 # default port
 ssl_port = 6697 # ssl port
 chans = ["#test", ] #default channels
 botnick = "GLaBOT" # bot nick
 botuser = "GlaBOT"
-bothost = "192.168.2.11"
+bothost = "APZervers"
 botserver = "apzerver"
 botname = "glabot"
 botpassword = "tastycake"
@@ -70,32 +70,6 @@ cakestr_2 = " __{*~*~*~*}__ "
 cakestr_3 = "`-------------`"
 prompt = ">> "
 
-#==============USELESS FUNCTION TO SHOW LOGO LOCALLY=================
-
-def printAptLogo():
-    myprint("               .,-:;//;:=,")
-    myprint("           . :H@@@MM@M#H/.,+%;,")
-    myprint("        ,/X+ +M@@M@MM%=,-%HMMM@X/,")
-    myprint("      -+@MM; $M@@MH+-,;XMMMM@MMMM@+-")
-    myprint("     ;@M@@M- XM@X;. -+XXXXXHHH@M@M#@/.               Aperture Laboratories")
-    myprint("   ,%MM@@MH ,@%=            .---=-=:=,.")
-    myprint("   =@#@@@MX .,              -%HX$$%%%+;")
-    myprint("  =-./@M@M$                  .;@MMMM@MM:             IRC Bot GLaBot")
-    myprint("  X@/ -$MM/                    .+MM@@@M$")
-    myprint(" ,@M@H: :@:                    . =X#@@@@-")
-    myprint(" ,@@@MMX, .                    /H- ;@M@M=            Status:             [OK]")
-    myprint(" .H@@@@M@+,                    %MM+..%#$.")
-    myprint("  /MMMM@MMH/.                  XM@MH; =;")
-    myprint("   /%+%$XHH@$=              , .H@@@@MX,")
-    myprint("    .=--------.           -%H.,@@@@@MX,")
-    myprint("    .%MM@@@HHHXX$$$%+= .:$MMX =M@@MM%.")
-    myprint("      =XMMM@MM@MM#H;,-+HMM@M+ /MMMX=")
-    myprint("        =%@M@M#@$-.=$@MM@@@M; %M%=")
-    myprint("          ,:+$+-,/H#MMMMMMM@= =,")
-    myprint("                =++%%%%+/:-.")
-
-
-#============BASIC FUNCTIONS TO MAKE THIS A BIT EASIER===============
 
 def myprint(msg):
     print "%s%s" % (prompt, msg)
@@ -137,11 +111,13 @@ def hello(msg): # This function responds to a user that inputs "Hello testbot"
         myprint("%s said hi in %s" % (nick, chan))
         sendChanMsg(chan, "Hello, and again welcome to the Enrichment Centre, %s. Testing is available." % (nick))
 
+def NickIdentify():
+    ircsock.send("NICKSERV IDENTIFY %s\n" % (botpassword)) # Identifies the bot's nickname with nickserv
+    myprint("bot identified")
+
 def identify():
     ircsock.send("NICK %s\n" % (botnick)) # Here we actually assign the nick to the bot
-    time.sleep(3)
-    ircsock.send("NICKSERV IDENTIFY %s\n" % (botpassword)) # Identifies the bot's nickname with nickserv
-    myprint("Bot identified")
+    myprint("Bot username changed")
 
 #========================END OF BASIC FUNCTIONS=====================
 
@@ -401,8 +377,11 @@ def sayCmd(msg):
 def sendGreet(msg):
     nick = getNick(msg).lower()
     chan = getChannel(msg)
+    myprint(nick)
     if nick.find("cave") >= 0 and nick.find("johnson") >=0:
         sendChanMsg(chan, "Hello, Mr. Johnson.")
+    else:
+        sendChanMsg(chan, "Welcome back to central hub room.")
 
     #QUIT
 
@@ -437,13 +416,14 @@ loadTaunts()
 try:
     ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # TODO: IPv6 ???
     #ircsock = ssl.wrap_socket(ircsock) # SSL wrapper for the socket
-    ircsock.settimeout(250.0)
+    #ircsock.settimeout(250.0)
     ircsock.connect((server, port)) # Here we connect to the server using the port defined above
     ircsock.send("USER %s %s %s %s\n" % (botuser, bothost, botserver, botname)) # Bot authentication
-    identify() # Bot identification
-    time.sleep(10)
+    ircsock.send("NICK %s\n" % (botnick) ) # Here we actually assign the nick to the bot
+    #identify() # Bot identification
+    time.sleep(5)
     joinChans(chans)
-    printAptLogo()
+    #printAptLogo()
     #  idleRPG()
 
     while 1: # This is our infinite loop where we'll wait for commands to show up, the 'break' function will exit the loop and end the program thus killing the bot
@@ -454,6 +434,9 @@ try:
         if "PING :" in ircmsg: # If the server pings us then we've got to respond!
             reply = ircmsg.split("PING :")[1] # In some IRCds it is mandatory to reply to PING the same message we recieve
             ping(reply)
+            ircsock.send("USER %s %s %s %s\n" % (botuser, bothost, botserver, botname)) # Bot aut$
+            ircsock.send("NICK %s\n" % (botnick) ) # Here we actually assign the nick to the bot
+            joinChans(chans)
 
         if " INVITE " + botnick + " :" in ircmsg:
             tmpstr = ircmsg
